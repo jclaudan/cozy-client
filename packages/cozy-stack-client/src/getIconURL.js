@@ -106,9 +106,11 @@ const _getIconURL = async (stackClient, opts) => {
  * order to be able to delete the memoization if needed
  */
 
+class ErrorReturned extends String {}
+
 const getIconURL = function() {
   return _getIconURL.apply(this, arguments).catch(e => {
-    return ''
+    return new ErrorReturned()
   })
 }
 
@@ -120,4 +122,4 @@ export default memoize(getIconURL, {
   }
 })
 
-export { getIconURL }
+export { getIconURL, ErrorReturned }
