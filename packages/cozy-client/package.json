@@ -17,7 +17,7 @@
     "lodash": "^4.17.13",
     "microee": "^0.0.6",
     "prop-types": "^15.6.2",
-    "react-redux": "^5.0.7",
+    "react-redux": "^7.0.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.3.0",
     "sift": "^6.0.0",
