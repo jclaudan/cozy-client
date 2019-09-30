@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
-    "mockdate": "^2.0.2",
+    "mockdate": "2.0.2",
     "react": "16.10.1"
   },
   "peerDependencies": {
