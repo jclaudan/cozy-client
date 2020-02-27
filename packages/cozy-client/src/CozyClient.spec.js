@@ -5,6 +5,8 @@ import {
   TODO_1,
   TODO_2,
   TODO_3,
+  TODO_WITH_AUTHOR,
+  AUTHORS,
   DOCTYPE_VERSION,
   APP_NAME,
   APP_VERSION,
@@ -12,7 +14,7 @@ import {
 } from './__tests__/fixtures'
 
 import CozyClient from './CozyClient'
-import CozyStackClient from 'cozy-stack-client'
+import CozyStackClient, { OAuthClient } from 'cozy-stack-client'
 import CozyLink from './CozyLink'
 import { Mutations, QueryDefinition } from './queries/dsl'
 import {
@@ -25,6 +27,8 @@ import {
 } from './store'
 import { HasManyFiles, Association, HasMany } from './associations'
 import mapValues from 'lodash/mapValues'
+
+import { Q } from 'cozy-client'
 
 const normalizeData = data =>
   mapValues(data, (docs, doctype) => {
@@ -111,7 +115,7 @@ describe('CozyClient initialization', () => {
     expect(client.stackClient.token.accessToken).toBe(token)
   })
 
-  it('can be instantiated from an old client', () => {
+  it('can be instantiated from a cookie-based old client', () => {
     // Not using a real cozy-client-js here not to have to add it as a dep
     const url = 'https://testcozy.mycozy.cloud'
     const token = 'Registration-token'
@@ -122,6 +126,22 @@ describe('CozyClient initialization', () => {
       }
     }
     const client = CozyClient.fromOldClient(oldClient)
+    expect(client.stackClient.uri).toBe(url)
+    expect(client.stackClient.token.token).toBe(token)
+  })
+
+  it('can be instantiated from an oauth-based old client', async () => {
+    // Not using a real cozy-client-js here not to have to add it as a dep
+    const url = 'https://testcozy.mycozy.cloud'
+    const token = 'Registration-token'
+    const oldClient = {
+      _url: url,
+      _oauth: true,
+      _authcreds: Promise.resolve({
+        token
+      })
+    }
+    const client = await CozyClient.fromOldOAuthClient(oldClient)
     expect(client.stackClient.uri).toBe(url)
     expect(client.stackClient.token.token).toBe(token)
   })
@@ -240,7 +260,16 @@ describe('CozyClient handlers', () => {
 })
 
 describe('CozyClient logout', () => {
-  let client, links
+  let client, links, stackClient
+
+  class MockOAuthClient extends OAuthClient {
+    constructor() {
+      super({ oauth: {} })
+      this.unregister = jest.fn()
+      this.isRegistered = jest.fn()
+      this.fetch = jest.fn()
+    }
+  }
 
   beforeEach(() => {
     links = [
@@ -257,7 +286,13 @@ describe('CozyClient logout', () => {
     links.forEach(link => {
       link.registerClient = jest.fn()
     })
-    client = new CozyClient({ links, schema: SCHEMA })
+    stackClient = new MockOAuthClient()
+    client = new CozyClient({
+      links,
+      stackClient,
+      schema: SCHEMA,
+      warningForCustomHandlers: false
+    })
   })
 
   it('should call reset on each link that can be reset', async () => {
@@ -304,6 +339,33 @@ describe('CozyClient logout', () => {
     jest.spyOn(client, 'emit')
     await client.login()
     await client.logout()
+  })
+
+  it('should unregister an oauth client', async () => {
+    await client.login()
+    stackClient.isRegistered.mockReturnValue(true)
+
+    await client.logout()
+    expect(stackClient.unregister).toHaveBeenCalled()
+    expect(stackClient.fetch).not.toHaveBeenCalledWith('DELETE', '/auth/login')
+  })
+
+  it('should log out a web client', async () => {
+    stackClient = {
+      fetch: jest.fn(),
+      unregister: jest.fn()
+    }
+    client = new CozyClient({
+      links,
+      stackClient,
+      schema: SCHEMA,
+      uri: 'http://cozy.io',
+      token: '123abc',
+      warningForCustomHandlers: false
+    })
+    await client.logout()
+    expect(stackClient.fetch).toHaveBeenCalledWith('DELETE', '/auth/login')
+    expect(stackClient.unregister).not.toHaveBeenCalled()
   })
 })
 
@@ -405,7 +467,7 @@ describe('CozyClient', () => {
 
   describe('all', () => {
     it('should return a QueryDefinition', () => {
-      expect(client.all('io.cozy.todos')).toEqual({ doctype: 'io.cozy.todos' })
+      expect(Q('io.cozy.todos')).toEqual({ doctype: 'io.cozy.todos' })
     })
   })
 
@@ -443,7 +505,10 @@ describe('CozyClient', () => {
     it('should return a QueryDefinition', () => {
       expect(
         client.find('io.cozy.todos').where({ done: { $eq: true } })
-      ).toEqual({ doctype: 'io.cozy.todos', selector: { done: { $eq: true } } })
+      ).toEqual({
+        doctype: 'io.cozy.todos',
+        selector: { done: { $eq: true } }
+      })
     })
   })
 
@@ -796,7 +861,7 @@ describe('CozyClient', () => {
   describe('query', () => {
     let query, fakeResponse
     beforeEach(() => {
-      query = client.all('io.cozy.todos')
+      query = Q('io.cozy.todos')
       fakeResponse = { data: 'FAKE!!!' }
     })
 
@@ -861,7 +926,7 @@ describe('CozyClient', () => {
         .mockReturnValueOnce(Promise.resolve({ data: [], included: [] }))
 
       const resp = await client.query(
-        client.all('io.cozy.todos').include(['attachments'])
+        Q('io.cozy.todos').include(['attachments'])
       )
 
       expect(requestHandler).toHaveBeenCalledTimes(4)
@@ -907,7 +972,7 @@ describe('CozyClient', () => {
     let query
 
     beforeEach(() => {
-      query = client.all('io.cozy.todos')
+      query = Q('io.cozy.todos')
     })
 
     afterEach(() => {
@@ -1006,6 +1071,34 @@ describe('CozyClient', () => {
   })
 
   describe('hydratation', () => {
+    it('getQueryFromState should hydrate the documents if asked', async () => {
+      client.store.dispatch.mockRestore()
+      client.requestQuery = async ({ doctype }) => {
+        if (doctype === 'io.cozy.todos') {
+          return {
+            data: [TODO_WITH_AUTHOR]
+          }
+        } else if (doctype == 'io.cozy.persons') {
+          return {
+            data: AUTHORS
+          }
+        }
+      }
+      await client.query({ doctype: 'io.cozy.todos' }, { as: 'todos' })
+      await client.query({ doctype: 'io.cozy.persons' }, { as: 'people' })
+
+      const { data: rawTodos } = client.getQueryFromState('todos')
+
+      const { data: hydratedTodos } = client.getQueryFromState('todos', {
+        hydrated: true
+      })
+
+      expect(rawTodos[0].authors).toBeUndefined()
+
+      // Since the todo is hydrated, we can access authors through the relationship
+      expect(hydratedTodos[0].authors.data[0].name).toBe('Alice')
+    })
+
     it('should hydrate relationships into associations with helper methods in the context of a query', () => {
       const doc = client
         .hydrateDocuments(
@@ -1042,6 +1135,44 @@ describe('CozyClient', () => {
         .hydrateDocuments('io.cozy.todos', [null], 'allTodos')
         .shift()
       expect(doc).toBe(null)
+    })
+  })
+
+  describe('Instance options', () => {
+    it('should expose options loaded via the DOM', () => {
+      const options = { cozyDomain: 'cozy.tools', cozyToken: 'abc123' }
+
+      const globalQuerySelectorBefore = document.querySelector
+      document.querySelector = jest.fn().mockReturnValue({ dataset: options })
+
+      const client = new CozyClient({})
+      client.loadInstanceOptionsFromDOM()
+      expect(client.getInstanceOptions()).toEqual(options)
+
+      document.querySelector = globalQuerySelectorBefore
+    })
+
+    it('should load the single DOM dataset', () => {
+      const options = { domain: 'cozy.tools', token: 'abc123' }
+      const dataset = {
+        cozy: JSON.stringify(options)
+      }
+
+      const globalQuerySelectorBefore = document.querySelector
+      document.querySelector = jest.fn().mockReturnValue({ dataset })
+
+      const client = new CozyClient({})
+      client.loadInstanceOptionsFromDOM()
+      expect(client.getInstanceOptions()).toEqual(options)
+
+      document.querySelector = globalQuerySelectorBefore
+    })
+  })
+
+  describe('serialization', () => {
+    it('should be snapshotted in a simplified format', () => {
+      const client = new CozyClient({ uri: 'http://localhost:8080' })
+      expect(client).toMatchSnapshot()
     })
   })
 })

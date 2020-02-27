@@ -6,7 +6,8 @@ export {
   QueryDefinition,
   Mutations,
   MutationTypes,
-  getDoctypeFromOperation
+  getDoctypeFromOperation,
+  Q
 } from './queries/dsl'
 export {
   Association,
@@ -16,10 +17,17 @@ export {
   HasManyInPlace,
   HasManyTriggers
 } from './associations'
-export { dehydrate } from './helpers'
+export { dehydrate, generateWebLink } from './helpers'
 export { cancelable } from './utils'
 export { getQueryFromState } from './store'
 export { default as Registry } from './registry'
 
 import * as manifest from './manifest'
 export { manifest }
+
+export * from './mock'
+
+export * from './cli'
+
+import * as models from './models'
+export { models }

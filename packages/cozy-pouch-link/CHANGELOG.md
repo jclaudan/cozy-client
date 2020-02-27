@@ -3,6 +3,617 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.0.0](https://github.com/cozy/cozy-client/compare/v11.6.0...v12.0.0) (2020-02-26)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.6.0](https://github.com/cozy/cozy-client/compare/v11.5.0...v11.6.0) (2020-02-26)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.5.0](https://github.com/cozy/cozy-client/compare/v11.4.1...v11.5.0) (2020-02-26)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [11.4.1](https://github.com/cozy/cozy-client/compare/v11.4.0...v11.4.1) (2020-02-25)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.4.0](https://github.com/cozy/cozy-client/compare/v11.3.0...v11.4.0) (2020-02-24)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.3.0](https://github.com/cozy/cozy-client/compare/v11.2.1...v11.3.0) (2020-02-24)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [11.2.1](https://github.com/cozy/cozy-client/compare/v11.2.0...v11.2.1) (2020-02-21)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.2.0](https://github.com/cozy/cozy-client/compare/v11.1.1...v11.2.0) (2020-02-21)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [11.1.1](https://github.com/cozy/cozy-client/compare/v11.1.0...v11.1.1) (2020-02-17)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.1.0](https://github.com/cozy/cozy-client/compare/v11.0.1...v11.1.0) (2020-02-14)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [11.0.1](https://github.com/cozy/cozy-client/compare/v11.0.0...v11.0.1) (2020-02-13)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [11.0.0](https://github.com/cozy/cozy-client/compare/v10.9.0...v11.0.0) (2020-02-12)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.9.0](https://github.com/cozy/cozy-client/compare/v10.8.1...v10.9.0) (2020-02-11)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [10.8.1](https://github.com/cozy/cozy-client/compare/v10.8.0...v10.8.1) (2020-02-07)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.8.0](https://github.com/cozy/cozy-client/compare/v10.7.1...v10.8.0) (2020-02-07)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [10.7.1](https://github.com/cozy/cozy-client/compare/v10.7.0...v10.7.1) (2020-02-05)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.7.0](https://github.com/cozy/cozy-client/compare/v10.6.0...v10.7.0) (2020-01-31)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.6.0](https://github.com/cozy/cozy-client/compare/v10.5.0...v10.6.0) (2020-01-31)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.5.0](https://github.com/cozy/cozy-client/compare/v10.4.0...v10.5.0) (2020-01-28)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.4.0](https://github.com/cozy/cozy-client/compare/v10.3.0...v10.4.0) (2020-01-27)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.3.0](https://github.com/cozy/cozy-client/compare/v10.2.1...v10.3.0) (2020-01-24)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [10.2.1](https://github.com/cozy/cozy-client/compare/v10.2.0...v10.2.1) (2020-01-23)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.2.0](https://github.com/cozy/cozy-client/compare/v10.0.0...v10.2.0) (2020-01-22)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.1.0](https://github.com/cozy/cozy-client/compare/v10.0.0...v10.1.0) (2020-01-22)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [10.0.0](https://github.com/cozy/cozy-client/compare/v9.10.0...v10.0.0) (2020-01-22)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.10.0](https://github.com/cozy/cozy-client/compare/v9.9.0...v9.10.0) (2020-01-20)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.9.0](https://github.com/cozy/cozy-client/compare/v9.8.1...v9.9.0) (2020-01-20)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [9.8.1](https://github.com/cozy/cozy-client/compare/v9.8.0...v9.8.1) (2020-01-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.8.0](https://github.com/cozy/cozy-client/compare/v9.7.0...v9.8.0) (2020-01-15)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.7.0](https://github.com/cozy/cozy-client/compare/v9.6.1...v9.7.0) (2020-01-15)
+
+
+### Features
+
+* Deprecate client.all in favor of Q ([#615](https://github.com/cozy/cozy-client/issues/615)) ([2d648d2](https://github.com/cozy/cozy-client/commit/2d648d2))
+
+
+
+
+
+## [9.6.1](https://github.com/cozy/cozy-client/compare/v9.6.0...v9.6.1) (2020-01-15)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.6.0](https://github.com/cozy/cozy-client/compare/v9.5.2...v9.6.0) (2020-01-13)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [9.5.2](https://github.com/cozy/cozy-client/compare/v9.5.1...v9.5.2) (2020-01-10)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [9.5.1](https://github.com/cozy/cozy-client/compare/v9.5.0...v9.5.1) (2020-01-09)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.5.0](https://github.com/cozy/cozy-client/compare/v9.4.0...v9.5.0) (2020-01-08)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.4.0](https://github.com/cozy/cozy-client/compare/v9.3.0...v9.4.0) (2020-01-06)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.3.0](https://github.com/cozy/cozy-client/compare/v9.2.0...v9.3.0) (2020-01-02)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.2.0](https://github.com/cozy/cozy-client/compare/v9.1.1...v9.2.0) (2019-12-19)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [9.1.1](https://github.com/cozy/cozy-client/compare/v9.1.0...v9.1.1) (2019-12-18)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.1.0](https://github.com/cozy/cozy-client/compare/v9.0.0...v9.1.0) (2019-12-18)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [9.0.0](https://github.com/cozy/cozy-client/compare/v8.10.1...v9.0.0) (2019-12-18)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [8.10.1](https://github.com/cozy/cozy-client/compare/v8.10.0...v8.10.1) (2019-12-17)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.10.0](https://github.com/cozy/cozy-client/compare/v8.9.0...v8.10.0) (2019-12-17)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.9.0](https://github.com/cozy/cozy-client/compare/v8.8.1...v8.9.0) (2019-12-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [8.8.1](https://github.com/cozy/cozy-client/compare/v8.8.0...v8.8.1) (2019-12-12)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.8.0](https://github.com/cozy/cozy-client/compare/v8.7.1...v8.8.0) (2019-12-12)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [8.7.1](https://github.com/cozy/cozy-client/compare/v8.7.0...v8.7.1) (2019-12-10)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.7.0](https://github.com/cozy/cozy-client/compare/v8.6.0...v8.7.0) (2019-12-10)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.6.0](https://github.com/cozy/cozy-client/compare/v8.5.1...v8.6.0) (2019-12-09)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [8.5.1](https://github.com/cozy/cozy-client/compare/v8.5.0...v8.5.1) (2019-12-05)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.5.0](https://github.com/cozy/cozy-client/compare/v8.4.0...v8.5.0) (2019-12-02)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.4.0](https://github.com/cozy/cozy-client/compare/v8.3.1...v8.4.0) (2019-11-29)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [8.3.1](https://github.com/cozy/cozy-client/compare/v8.3.0...v8.3.1) (2019-11-29)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.3.0](https://github.com/cozy/cozy-client/compare/v8.2.0...v8.3.0) (2019-11-28)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.2.0](https://github.com/cozy/cozy-client/compare/v8.1.0...v8.2.0) (2019-11-25)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.1.0](https://github.com/cozy/cozy-client/compare/v8.0.0...v8.1.0) (2019-11-25)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [8.0.0](https://github.com/cozy/cozy-client/compare/v7.14.0...v8.0.0) (2019-11-22)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.14.0](https://github.com/cozy/cozy-client/compare/v7.13.0...v7.14.0) (2019-11-21)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.13.0](https://github.com/cozy/cozy-client/compare/v7.12.0...v7.13.0) (2019-11-21)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.12.0](https://github.com/cozy/cozy-client/compare/v7.11.0...v7.12.0) (2019-11-18)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.11.0](https://github.com/cozy/cozy-client/compare/v7.10.0...v7.11.0) (2019-11-13)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.10.0](https://github.com/cozy/cozy-client/compare/v7.9.0...v7.10.0) (2019-11-12)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.9.0](https://github.com/cozy/cozy-client/compare/v7.8.0...v7.9.0) (2019-11-08)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.8.0](https://github.com/cozy/cozy-client/compare/v7.7.0...v7.8.0) (2019-10-31)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.7.0](https://github.com/cozy/cozy-client/compare/v7.6.0...v7.7.0) (2019-10-29)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.6.0](https://github.com/cozy/cozy-client/compare/v7.5.2...v7.6.0) (2019-10-24)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [7.5.2](https://github.com/cozy/cozy-client/compare/v7.5.1...v7.5.2) (2019-10-21)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [7.5.1](https://github.com/cozy/cozy-client/compare/v7.5.0...v7.5.1) (2019-10-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.5.0](https://github.com/cozy/cozy-client/compare/v7.4.1...v7.5.0) (2019-10-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [7.4.1](https://github.com/cozy/cozy-client/compare/v7.4.0...v7.4.1) (2019-10-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.4.0](https://github.com/cozy/cozy-client/compare/v7.3.1...v7.4.0) (2019-10-16)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [7.3.1](https://github.com/cozy/cozy-client/compare/v7.3.0...v7.3.1) (2019-10-15)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.3.0](https://github.com/cozy/cozy-client/compare/v7.2.0...v7.3.0) (2019-10-14)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.2.0](https://github.com/cozy/cozy-client/compare/v7.1.1...v7.2.0) (2019-10-14)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+## [7.1.1](https://github.com/cozy/cozy-client/compare/v7.1.0...v7.1.1) (2019-10-11)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
+# [7.1.0](https://github.com/cozy/cozy-client/compare/v7.0.0...v7.1.0) (2019-10-10)
+
+**Note:** Version bump only for package cozy-pouch-link
+
+
+
+
+
 # [7.0.0](https://github.com/cozy/cozy-client/compare/v6.66.0...v7.0.0) (2019-10-07)
 
 **Note:** Version bump only for package cozy-pouch-link

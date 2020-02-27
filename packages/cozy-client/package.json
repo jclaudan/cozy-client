@@ -1,6 +1,6 @@
 {
   "name": "cozy-client",
-  "version": "7.0.0",
+  "version": "12.0.0",
   "license": "MIT",
   "main": "dist/node.js",
   "browser": "dist/index.js",
@@ -12,14 +12,19 @@
     "url": "git+https://github.com/cozy/cozy-client.git"
   },
   "dependencies": {
+    "btoa": "^1.2.1",
     "cozy-device-helper": "^1.7.3",
-    "cozy-stack-client": "^7.0.0",
+    "cozy-logger": "^1.6.0",
+    "cozy-stack-client": "^12.0.0",
+    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.13",
     "microee": "^0.0.6",
+    "open": "^7.0.2",
     "prop-types": "^15.6.2",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
     "redux-thunk": "^2.3.0",
+    "server-destroy": "^1.0.1",
     "sift": "^6.0.0",
     "url-search-params-polyfill": "^7.0.0"
   },
@@ -29,9 +34,15 @@
     "prepublishOnly": "yarn run build"
   },
   "devDependencies": {
-    "babel-cli": "6.26.0",
+    "@babel/cli": "7.6.2",
+    "@testing-library/react-hooks": "^3.2.1",
+    "babel-plugin-search-and-replace": "1.0.1",
+    "btoa": "1.2.1",
+    "cozy-logger": "1.6.0",
     "mockdate": "^2.0.2",
-    "react": "16.10.1"
+    "react": "16.12.0",
+    "react-test-renderer": "^16.12.0",
+    "server-destroy": "^1.0.1"
   },
   "peerDependencies": {
     "react": "^16.7.0"

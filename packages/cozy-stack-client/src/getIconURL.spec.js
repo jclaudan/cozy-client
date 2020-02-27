@@ -1,20 +1,27 @@
 import { getIconURL } from './getIconURL'
+import getIconUrlDefault from './getIconURL'
 
 const FakeBlob = (data, options) => {
   return { data, ...options }
 }
 
+const resetcreateObjectURL = () => {
+  global.URL.createObjectURL = jest.fn(blob => {
+    return blob
+  })
+}
+let stackClient = {},
+  responses
+const fakeResp = (method, url) => {
+  const resp = responses[url]
+  return resp
+    ? Promise.resolve(resp)
+    : Promise.reject(`404: ${url} (not found in fake server)`)
+}
 describe('get icon', () => {
-  let stackClient = {},
-    responses
   beforeEach(() => {
     responses = {}
-    const fakeResp = (method, url) => {
-      const resp = responses[url]
-      return resp
-        ? Promise.resolve(resp)
-        : Promise.reject(`404: ${url} (not found in fake server)`)
-    }
+
     stackClient.fetch = jest.fn().mockImplementation(fakeResp)
     stackClient.fetchJSON = jest.fn().mockImplementation(fakeResp)
     global.URL.createObjectURL = jest.fn(blob => {
@@ -125,5 +132,49 @@ describe('get icon', () => {
         data: ['<svg id="2"></svg>']
       })
     )
+  })
+
+  it('should call the server the second time if the first time it failed', async () => {
+    responses['/registry/caissedepargne1/icon'] = {
+      ok: true,
+      blob: () => FakeBlob([svgData], { type: 'image/svg+xml' })
+    }
+    stackClient.fetch = jest.fn().mockRejectedValue('No connexion')
+
+    await getIconUrlDefault(stackClient, defaultOpts)
+    expect(global.URL.createObjectURL).not.toHaveBeenCalled()
+
+    stackClient.fetch = jest.fn().mockImplementation(fakeResp)
+    const url2 = await getIconUrlDefault(stackClient, defaultOpts)
+    expect(global.URL.createObjectURL).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'image/svg+xml'
+      })
+    )
+    expect(url2.data[0]).toBe('<svg></svg>')
+  })
+
+  it('should not call create createObjectURL since it should be memoized', async () => {
+    /**
+     * Create a new response / request to be sure to not having memoized it already
+     */
+    responses['/konnectors/caissedepargne10/icon'] = {
+      ok: true,
+      blob: () => FakeBlob([svgData], { type: 'image/svg+xml' })
+    }
+    const url = await getIconUrlDefault(stackClient, {
+      type: 'konnector',
+      slug: 'caissedepargne10'
+    })
+    expect(global.URL.createObjectURL).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'image/svg+xml'
+      })
+    )
+    expect(url.data[0]).toBe('<svg></svg>')
+    resetcreateObjectURL()
+    await getIconUrlDefault(stackClient, defaultOpts)
+
+    expect(global.URL.createObjectURL).not.toHaveBeenCalled()
   })
 })

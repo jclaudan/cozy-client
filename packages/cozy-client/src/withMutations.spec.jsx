@@ -1,6 +1,5 @@
 import React from 'react'
 import { shallow } from 'enzyme'
-import PropTypes from 'prop-types'
 
 import withMutations from './withMutations'
 
@@ -24,6 +23,14 @@ describe('withMutations', () => {
     jest.spyOn(console, 'error').mockImplementation(message => {
       throw new Error(message)
     })
+    const originalWarn = console.warn
+    jest.spyOn(console, 'warn').mockImplementation(function(message) {
+      if (message.includes('Deprecation: withMutations')) {
+        return
+      } else {
+        return originalWarn.apply(this, arguments)
+      }
+    })
     const mutationsMock = client => ({
       myMutation1: () => {},
       myMutation2: () => {}
@@ -35,23 +42,6 @@ describe('withMutations', () => {
         context: { client: clientMock }
       })
     }).not.toThrowError()
-  })
-
-  it('should expose all additional mutations provided proptypes', () => {
-    const Foo = () => <div />
-    const mutationsMock = client => ({
-      myMutation1: () => {},
-      myMutation2: () => {}
-    })
-
-    withMutations(mutationsMock)(Foo)
-    expect(Foo.propTypes).toEqual({
-      createDocument: PropTypes.func.isRequired,
-      deleteDocument: PropTypes.func.isRequired,
-      saveDocument: PropTypes.func.isRequired,
-      myMutation1: PropTypes.func.isRequired,
-      myMutation2: PropTypes.func.isRequired
-    })
   })
 
   it('should inject base mutations props into wrapped component', async () => {

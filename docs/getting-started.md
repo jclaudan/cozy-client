@@ -18,8 +18,8 @@ Main features :
 - Authentification with your Cozy
 - Requests to the couchdb data
 - Transparent relations between couchdb documents
-- Automaically takes care of updating metadata in couch documents
-- Offline : any data can be stored in a local cache without impacting your code that can continue to read and write.
+- Automatically takes care of updating metadata in couch documents
+- Offline: any data can be stored in a local cache without impacting your code that can continue to read and write.
 
 In addition, the library also provides a React integration to connect your components to the data stored in the cozy stack (with automatic refresh when the data is updated)
 
@@ -36,8 +36,10 @@ The following guide is an overview of a cozy-client integration to help you gett
 or
 `yarn add cozy-client`
 
+`CozyClient` is the master of your data: it manages data queries and their status.
 
-`CozyClient` is the master of your data: it manages data queries and their status 
+ℹ If you use Jest, you should also add a bit of configuration for imports to works properly,
+[see at the end of this document](#different-entrypoints-for-nodebrowser).
 
 ## Creating a client
 
@@ -61,7 +63,7 @@ const client = new CozyClient({
 
 If you need guidance to get the URI of your instance and/or the token, see [the app tutorial](https://docs.cozy.io/en/tutorials/app/#behind-the-magic).
 
-Every doctype accessed in `cozy-client` needs to be declared in the schema section of the options. See the specific [how-to](./how-tos.md#how-to-specify-a-schema-) on how to use the schema features.
+Every doctype accessed in `cozy-client` needs to be declared in the schema section of the options. See the specific [documentation](https://docs.cozy.io/en/cozy-client/schema) on how to use the schema features.
 
 
 ## How to query with Cozy Client
@@ -145,7 +147,7 @@ CozyClient comes with HOC and render props functions to connect to your data ins
 
 ## Different entrypoints for node/browser
 
-cozy-client has different entry points for browser and node (the node version does export React components). It is implemented by using fields in `package.json`: 
+cozy-client has different entry points for browser and node (the node version does not export React components). It is implemented by using fields in `package.json`: 
 
 - `browser` field is the entrypoint for browsers
 - `main` field is for node

@@ -58,9 +58,87 @@ from a Cozy. <code>QueryDefinition</code>s are sent to links.</p>
 </dd>
 </dl>
 
+## Constants
+
+<dl>
+<dt><a href="#generateWebLink">generateWebLink</a> ⇒ <code>string</code></dt>
+<dd><p>generateWebLink - Construct a link to a web app</p>
+<p>This function does not get its cozy url from a CozyClient instance so it can
+be used to build urls that point to other Cozies than the user&#39;s own Cozy.
+This is useful when pointing to the Cozy of the owner of a shared note for
+example.</p>
+</dd>
+<dt><a href="#getMutedErrors">getMutedErrors</a> ⇒ <code>Array</code></dt>
+<dd><p>getMutedErrors - Returns the list of errors that have been muted for the given account</p>
+</dd>
+<dt><a href="#muteError">muteError</a> ⇒ <code>object</code></dt>
+<dd><p>muteError - Adds an error to the list of muted errors for the given account</p>
+</dd>
+<dt><a href="#getStoreURL">getStoreURL</a> ⇒ <code>string</code></dt>
+<dd><p>Returns the store URL of an app/konnector</p>
+</dd>
+<dt><a href="#getStoreInstallationURL">getStoreInstallationURL</a> ⇒ <code>string</code></dt>
+<dd><p>Returns the store URL to install/update an app/konnector</p>
+</dd>
+<dt><a href="#isInstalled">isInstalled</a> ⇒ <code>object</code></dt>
+<dd></dd>
+<dt><a href="#getUrl">getUrl</a> ⇒ <code>string</code></dt>
+<dd></dd>
+<dt><a href="#getAppDisplayName">getAppDisplayName</a> ⇒ <code>string</code></dt>
+<dd><p>getAppDisplayName - Combines the translated prefix and name of the app into a single string.</p>
+</dd>
+<dt><a href="#isFile">isFile</a></dt>
+<dd></dd>
+<dt><a href="#isDirectory">isDirectory</a></dt>
+<dd></dd>
+<dt><a href="#isNote">isNote</a></dt>
+<dd></dd>
+<dt><a href="#isShortcurt">isShortcurt</a> ⇒ <code>boolean</code></dt>
+<dd></dd>
+<dt><a href="#shouldDisplayOffers">shouldDisplayOffers</a></dt>
+<dd><p>Returns whether an instance is concerned by our offers</p>
+</dd>
+<dt><a href="#hasAnOffer">hasAnOffer</a></dt>
+<dd><p>Returns if an instance has subscribed to one of our offers</p>
+</dd>
+<dt><a href="#buildPremiumLink">buildPremiumLink</a></dt>
+<dd><p>Returns the link to the Premium page on the Cozy&#39;s Manager</p>
+</dd>
+<dt><a href="#generatePrivateUrl">generatePrivateUrl</a></dt>
+<dd></dd>
+<dt><a href="#fetchURL">fetchURL</a> ⇒ <code>string</code></dt>
+<dd><p>Fetch and build an URL to open a note.</p>
+</dd>
+<dt><a href="#triggerStates">triggerStates</a></dt>
+<dd><p>Trigger states come from /jobs/triggers</p>
+</dd>
+<dt><a href="#fetchPolicies">fetchPolicies</a></dt>
+<dd><p>Use those fetch policies with <code>&lt;Query /&gt;</code> to limit the number of re-fetch.</p>
+</dd>
+<dt><a href="#Q">Q</a></dt>
+<dd><p>Helper to create a QueryDefinition. Recommended way to create
+query definitions.</p>
+</dd>
+<dt><a href="#isQueryLoading">isQueryLoading</a></dt>
+<dd><p>Returns whether the result of a query (given via queryConnect or Query)
+is loading.</p>
+</dd>
+<dt><a href="#hasQueryBeenLoaded">hasQueryBeenLoaded</a></dt>
+<dd><p>Returns whether a query has been loaded at least once</p>
+</dd>
+</dl>
+
 ## Functions
 
 <dl>
+<dt><a href="#createClientInteractive">createClientInteractive()</a></dt>
+<dd><p>Creates a client with interactive authentication.</p>
+<ul>
+<li>Will start an OAuth flow and open an authentication page</li>
+<li>Starts a local server to listen for the oauth callback</li>
+<li>Resolves with the client after user authentication</li>
+</ul>
+</dd>
 <dt><a href="#withClient">withClient(Component)</a> ⇒ <code>function</code></dt>
 <dd><p>HOC to provide client from context as prop</p>
 </dd>
@@ -73,17 +151,51 @@ from a Cozy. <code>QueryDefinition</code>s are sent to links.</p>
 <dt><a href="#sanitize">sanitize(manifest)</a> ⇒ <code>Manifest</code></dt>
 <dd><p>Normalize app manifest, retrocompatibility for old manifests</p>
 </dd>
+<dt><a href="#createMockClient">createMockClient()</a> ⇒ <code><a href="#CozyClient">CozyClient</a></code></dt>
+<dd><p>Creates a client suitable for use in tests</p>
+<ul>
+<li>client.{query,save} are mocked</li>
+<li>client.stackClient.fetchJSON is mocked</li>
+</ul>
+</dd>
+<dt><a href="#normalize">normalize(file)</a> ⇒ <code>object</code></dt>
+<dd><p>Normalizes an object representing a io.cozy.files object</p>
+<p>Ensures existence of <code>_id</code> and <code>_type</code></p>
+</dd>
+<dt><a href="#ensureFilePath">ensureFilePath(file, parent)</a> ⇒ <code>object</code></dt>
+<dd><p>Ensure the file has a <code>path</code> attribute, or build it</p>
+</dd>
+<dt><a href="#getParentFolderId">getParentFolderId(file)</a> ⇒ <code>string</code> | <code>null</code></dt>
+<dd><p>Get the id of the parent folder (<code>null</code> for the root folder)</p>
+</dd>
+<dt><a href="#isForType">isForType(permission, type)</a></dt>
+<dd><p>Checks if the permission item is about a specific doctype</p>
+</dd>
 <dt><a href="#currentResult">currentResult()</a> ⇒ <code>HydratedQueryState</code></dt>
 <dd><p>Returns the query from the store with hydrated documents.</p>
 </dd>
 <dt><a href="#fetchMore">fetchMore()</a></dt>
-<dd><p>Generates and execute a query that is offsetted by the number of documents
+<dd><p>Generates and executes a query that is offsetted by the number of documents
 we have in the store.</p>
 </dd>
 <dt><a href="#cancelable">cancelable(promise)</a> ⇒ <code>AugmentedPromise</code></dt>
 <dd><p>Wraps a promise so that it can be canceled</p>
 <p>Rejects with canceled: true as soon as cancel is called</p>
 </dd>
+</dl>
+
+## Typedefs
+
+<dl>
+<dt><a href="#QueryState">QueryState</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#Document">Document</a> : <code>object</code></dt>
+<dd><p>Couchdb document like an io.cozy.files</p>
+</dd>
+<dt><a href="#PermissionVerb">PermissionVerb</a> : <code>&#x27;ALL&#x27;</code> | <code>&#x27;GET&#x27;</code> | <code>&#x27;PATCH&#x27;</code> | <code>&#x27;POST&#x27;</code> | <code>&#x27;PUT&#x27;</code> | <code>&#x27;DELETE&#x27;</code></dt>
+<dd></dd>
+<dt><a href="#PermissionItem">PermissionItem</a> : <code>object</code></dt>
+<dd></dd>
 </dl>
 
 <a name="Association"></a>
@@ -183,8 +295,8 @@ the hydrated document (.data method). View components will access
 | target | <code>object</code> | Original object containing raw data |
 | name | <code>string</code> | Attribute under which the association is stored |
 | doctype | <code>string</code> | Doctype of the documents managed by the association |
-| options.dispatch | <code>function</code> | Store's dispatch, comes from the client |
 | options | <code>string</code> |  |
+| options.dispatch | <code>function</code> | Store's dispatch, comes from the client |
 
 <a name="Association+target"></a>
 
@@ -336,6 +448,7 @@ Responsible for
 
 * [HasMany](#HasMany)
     * [new HasMany()](#new_HasMany_new)
+    * [.count](#HasMany+count) ⇒ <code>number</code>
     * [.addById()](#HasMany+addById)
 
 <a name="new_HasMany_new"></a>
@@ -367,6 +480,15 @@ const todo = {
 }
 ```
 
+<a name="HasMany+count"></a>
+
+### hasMany.count ⇒ <code>number</code>
+Returns the total number of documents in the relationship.
+Does not handle documents absent from the store. If you want
+to do that, you can use .data.length.
+
+**Kind**: instance property of [<code>HasMany</code>](#HasMany)  
+**Returns**: <code>number</code> - - Total number of documents in the relationships  
 <a name="HasMany+addById"></a>
 
 ### hasMany.addById()
@@ -433,10 +555,20 @@ Association used for konnectors to retrieve all their related triggers.
 
 * [HasManyTriggers](#HasManyTriggers) ⇐ [<code>HasMany</code>](#HasMany)
     * _instance_
+        * [.count](#HasMany+count) ⇒ <code>number</code>
         * [.addById()](#HasMany+addById)
     * _static_
         * [.query()](#HasManyTriggers.query)
 
+<a name="HasMany+count"></a>
+
+### hasManyTriggers.count ⇒ <code>number</code>
+Returns the total number of documents in the relationship.
+Does not handle documents absent from the store. If you want
+to do that, you can use .data.length.
+
+**Kind**: instance property of [<code>HasManyTriggers</code>](#HasManyTriggers)  
+**Returns**: <code>number</code> - - Total number of documents in the relationships  
 <a name="HasMany+addById"></a>
 
 ### hasManyTriggers.addById()
@@ -474,32 +606,38 @@ Responsible for
     * [new CozyClient(options)](#new_CozyClient_new)
     * _instance_
         * [.registerPlugin()](#CozyClient+registerPlugin)
-        * [.login()](#CozyClient+login) ⇒ <code>Promise</code>
+        * [.login(options)](#CozyClient+login) ⇒ <code>Promise</code>
         * [.logout()](#CozyClient+logout) ⇒ <code>Promise</code>
         * [.collection(doctype)](#CozyClient+collection) ⇒ <code>DocumentCollection</code>
         * [.getDocumentSavePlan(document, relationships)](#CozyClient+getDocumentSavePlan) ⇒ <code>Array.&lt;Mutation&gt;</code>
+        * [.destroy(document)](#CozyClient+destroy) ⇒ [<code>Document</code>](#Document)
+        * [.query(queryDefinition, options)](#CozyClient+query) ⇒ <code>QueryResult</code>
+        * [.queryAll(queryDefinition, options)](#CozyClient+queryAll) ⇒ <code>Array</code>
         * [.fetchRelationships()](#CozyClient+fetchRelationships)
-        * [.hydrateDocument()](#CozyClient+hydrateDocument)
+        * [.hydrateDocuments(doctype, documents)](#CozyClient+hydrateDocuments) ⇒ <code>Array.&lt;HydratedDocument&gt;</code>
+        * [.hydrateDocument(document, schema)](#CozyClient+hydrateDocument) ⇒ <code>HydratedDocument</code>
         * [.makeNewDocument()](#CozyClient+makeNewDocument)
         * [.getAssociation()](#CozyClient+getAssociation)
         * [.getRelationshipStoreAccessors()](#CozyClient+getRelationshipStoreAccessors)
-        * [.getCollectionFromState(type)](#CozyClient+getCollectionFromState) ⇒ <code>Array.&lt;Document&gt;</code>
-        * [.getDocumentFromState(type, id)](#CozyClient+getDocumentFromState) ⇒ <code>Document</code>
-        * [.getQueryFromState(id)](#CozyClient+getQueryFromState) ⇒ <code>QueryState</code>
+        * [.getCollectionFromState(type)](#CozyClient+getCollectionFromState) ⇒ [<code>Array.&lt;Document&gt;</code>](#Document)
+        * [.getDocumentFromState(type, id)](#CozyClient+getDocumentFromState) ⇒ [<code>Document</code>](#Document)
+        * [.getQueryFromState(id)](#CozyClient+getQueryFromState) ⇒ [<code>QueryState</code>](#QueryState)
         * [.register(cozyURL)](#CozyClient+register) ⇒ <code>object</code>
         * [.startOAuthFlow(openURLCallback)](#CozyClient+startOAuthFlow) ⇒ <code>object</code>
         * [.renewAuthorization()](#CozyClient+renewAuthorization) ⇒ <code>object</code>
         * [.setStore(store)](#CozyClient+setStore)
+        * [.checkForRevocation()](#CozyClient+checkForRevocation)
         * [.handleRevocationChange()](#CozyClient+handleRevocationChange)
         * [.handleTokenRefresh()](#CozyClient+handleTokenRefresh)
         * [.createClient()](#CozyClient+createClient)
+        * [.getInstanceOptions()](#CozyClient+getInstanceOptions) ⇒ <code>object</code>
+        * [.loadInstanceOptionsFromDOM([selector])](#CozyClient+loadInstanceOptionsFromDOM) ⇒ <code>void</code>
         * [.setData(data)](#CozyClient+setData)
     * _static_
-        * [.fetchPolicies](#CozyClient.fetchPolicies)
-            * [.olderThan(delay)](#CozyClient.fetchPolicies.olderThan) ⇒ <code>function</code>
-            * [.noFetch()](#CozyClient.fetchPolicies.noFetch)
         * [.fromOldClient()](#CozyClient.fromOldClient)
+        * [.fromOldOAuthClient()](#CozyClient.fromOldOAuthClient)
         * [.fromEnv()](#CozyClient.fromEnv)
+        * [.registerHook(doctype, name, fn)](#CozyClient.registerHook)
 
 <a name="new_CozyClient_new"></a>
 
@@ -507,11 +645,11 @@ Responsible for
 
 | Param | Type | Description |
 | --- | --- | --- |
-| options | <code>Object</code> |  |
+| options | <code>object</code> | Options |
 | options.link | <code>Link</code> | Backward compatibility |
 | options.links | <code>Array.Link</code> | List of links |
-| options.schema | <code>Object</code> | Schema description for each doctypes |
-| options.appMetadata | <code>Object</code> | Metadata about the application that will be used in ensureCozyMetadata Cozy-Client will automatically call `this.login()` if provided with a token and an uri |
+| options.schema | <code>object</code> | Schema description for each doctypes |
+| options.appMetadata | <code>object</code> | Metadata about the application that will be used in ensureCozyMetadata Cozy-Client will automatically call `this.login()` if provided with a token and an uri |
 
 <a name="CozyClient+registerPlugin"></a>
 
@@ -564,7 +702,7 @@ client.plugins.alerts
 ```
 <a name="CozyClient+login"></a>
 
-### cozyClient.login() ⇒ <code>Promise</code>
+### cozyClient.login(options) ⇒ <code>Promise</code>
 Notify the links that they can start and set isLogged to true.
 
 On mobile, where url/token are set after instantiation, use this method
@@ -580,8 +718,9 @@ Emits
 
 | Param | Type | Description |
 | --- | --- | --- |
-| options.token | <code>options.token</code> | If passed, the token is set on the client |
-| options.uri | <code>options.uri</code> | If passed, the uri is set on the client |
+| options | <code>object</code> | Options |
+| options.token | <code>string</code> | If passed, the token is set on the client |
+| options.uri | <code>string</code> | If passed, the uri is set on the client |
 
 <a name="CozyClient+logout"></a>
 
@@ -602,10 +741,11 @@ Forwards to a stack client instance and returns
 a [DocumentCollection](https://docs.cozy.io/en/cozy-client/api/cozy-stack-client/#DocumentCollection) instance.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+**Returns**: <code>DocumentCollection</code> - Collection corresponding to the doctype  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| doctype | <code>String</code> | The collection doctype. |
+| doctype | <code>string</code> | The collection doctype. |
 
 <a name="CozyClient+getDocumentSavePlan"></a>
 
@@ -630,6 +770,50 @@ client.getDocumentSavePlan(baseDoc, relationships)
 | document | <code>object</code> | The base document to create |
 | relationships | <code>object</code> | The list of relationships to add, as a dictionnary. Keys should be relationship names and values the documents to link. |
 
+<a name="CozyClient+destroy"></a>
+
+### cozyClient.destroy(document) ⇒ [<code>Document</code>](#Document)
+Destroys a document. {before,after}:destroy hooks will be fired.
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+**Returns**: [<code>Document</code>](#Document) - The document that has been deleted  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| document | [<code>Document</code>](#Document) | Document to be deleted |
+
+<a name="CozyClient+query"></a>
+
+### cozyClient.query(queryDefinition, options) ⇒ <code>QueryResult</code>
+Executes a query and returns its results.
+
+Results from the query will be saved internally and can be retrieved via
+`getQueryFromState` or directly using `<Query />`. `<Query />` automatically
+executes its query when mounted if no fetch policy has been indicated.
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| queryDefinition | [<code>QueryDefinition</code>](#QueryDefinition) |  |
+| options | <code>string</code> | Options |
+| options.as | <code>string</code> | Names the query so it can be reused (by multiple components for example) |
+
+<a name="CozyClient+queryAll"></a>
+
+### cozyClient.queryAll(queryDefinition, options) ⇒ <code>Array</code>
+Will fetch all documents for a `queryDefinition`, automatically fetching more
+documents if the total of documents is superior to the pagination limit. Can
+result in a lot of network requests.
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+**Returns**: <code>Array</code> - All documents matching the query  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| queryDefinition | [<code>QueryDefinition</code>](#QueryDefinition) |  |
+| options | <code>object</code> | Options to the query |
+
 <a name="CozyClient+fetchRelationships"></a>
 
 ### cozyClient.fetchRelationships()
@@ -637,18 +821,39 @@ Fetch relationships for a response (can be several docs).
 Fills the `relationships` attribute of each documents.
 
 Can potentially result in several fetch requests.
-Queries are optimized before being sent.
+Queries are optimized before being sent (multiple single documents queries can be packed into
+one multiple document query) for example.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+<a name="CozyClient+hydrateDocuments"></a>
+
+### cozyClient.hydrateDocuments(doctype, documents) ⇒ <code>Array.&lt;HydratedDocument&gt;</code>
+Returns documents with their relationships resolved according to their schema.
+If related documents are not in the store, they will not be fetched automatically.
+Instead, the relationships will have null documents.
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+
+| Param | Type |
+| --- | --- |
+| doctype | <code>string</code> | 
+| documents | [<code>Array.&lt;Document&gt;</code>](#Document) | 
+
 <a name="CozyClient+hydrateDocument"></a>
 
-### cozyClient.hydrateDocument()
-Instantiate relationships on a document
+### cozyClient.hydrateDocument(document, schema) ⇒ <code>HydratedDocument</code>
+Resolves relationships on a document.
 
 The original document is kept in the target attribute of
 the relationship
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| document | [<code>Document</code>](#Document) | for which relationships must be resolved |
+| schema | [<code>Schema</code>](#Schema) | for the document doctype |
+
 <a name="CozyClient+makeNewDocument"></a>
 
 ### cozyClient.makeNewDocument()
@@ -676,40 +881,41 @@ the store up, which in turn will update the `<Query>`s and re-render the data.
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
 <a name="CozyClient+getCollectionFromState"></a>
 
-### cozyClient.getCollectionFromState(type) ⇒ <code>Array.&lt;Document&gt;</code>
+### cozyClient.getCollectionFromState(type) ⇒ [<code>Array.&lt;Document&gt;</code>](#Document)
 Get a collection of documents from the internal store.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
-**Returns**: <code>Array.&lt;Document&gt;</code> - Array of documents or null if the collection does not exist.  
+**Returns**: [<code>Array.&lt;Document&gt;</code>](#Document) - Array of documents or null if the collection does not exist.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| type | <code>String</code> | Doctype of the collection |
+| type | <code>string</code> | Doctype of the collection |
 
 <a name="CozyClient+getDocumentFromState"></a>
 
-### cozyClient.getDocumentFromState(type, id) ⇒ <code>Document</code>
+### cozyClient.getDocumentFromState(type, id) ⇒ [<code>Document</code>](#Document)
 Get a document from the internal store.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
-**Returns**: <code>Document</code> - Document or null if the object does not exist.  
+**Returns**: [<code>Document</code>](#Document) - Document or null if the object does not exist.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| type | <code>String</code> | Doctype of the document |
-| id | <code>String</code> | Id of the document |
+| type | <code>string</code> | Doctype of the document |
+| id | <code>string</code> | Id of the document |
 
 <a name="CozyClient+getQueryFromState"></a>
 
-### cozyClient.getQueryFromState(id) ⇒ <code>QueryState</code>
+### cozyClient.getQueryFromState(id) ⇒ [<code>QueryState</code>](#QueryState)
 Get a query from the internal store.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
-**Returns**: <code>QueryState</code> - - Query state or null if it does not exist.  
+**Returns**: [<code>QueryState</code>](#QueryState) - - Query state or null if it does not exist.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| id | <code>String</code> | Id of the query (set via Query.props.as) |
+| id | <code>string</code> | Id of the query (set via Query.props.as) |
+| options.hydrated | <code>boolean</code> | Whether documents should be returned already hydrated (default: false) |
 
 <a name="CozyClient+register"></a>
 
@@ -759,7 +965,7 @@ use options.force = true.
 | Param | Type | Description |
 | --- | --- | --- |
 | store | <code>ReduxStore</code> | A redux store |
-| options.force | <code>Boolean</code> | Will deactivate throwing when client's store already exists |
+| options.force | <code>boolean</code> | Will deactivate throwing when client's store already exists |
 
 **Example**  
 ```
@@ -770,6 +976,12 @@ const store = createStore(combineReducers({
 })
 client.setStore(store)
 ```
+<a name="CozyClient+checkForRevocation"></a>
+
+### cozyClient.checkForRevocation()
+Returns whether the client has been revoked on the server
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
 <a name="CozyClient+handleRevocationChange"></a>
 
 ### cozyClient.handleRevocationChange()
@@ -793,6 +1005,23 @@ revocation and token refresh.
 If `oauth` options are passed, stackClient is an OAuthStackClient.
 
 **Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+<a name="CozyClient+getInstanceOptions"></a>
+
+### cozyClient.getInstanceOptions() ⇒ <code>object</code>
+getInstanceOptions - Returns current instance options, such as domain or app slug
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+<a name="CozyClient+loadInstanceOptionsFromDOM"></a>
+
+### cozyClient.loadInstanceOptionsFromDOM([selector]) ⇒ <code>void</code>
+loadInstanceOptionsFromDOM - Loads the dataset injected by the Stack in web pages and exposes it through getInstanceOptions
+
+**Kind**: instance method of [<code>CozyClient</code>](#CozyClient)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [selector] | <code>string</code> | <code>&quot;[role&#x3D;application]&quot;</code> | A selector for the node that holds the dataset to load |
+
 <a name="CozyClient+setData"></a>
 
 ### cozyClient.setData(data)
@@ -806,46 +1035,20 @@ set some data in the store.
 | --- | --- | --- |
 | data | <code>Object</code> | { doctype: [data] } |
 
-<a name="CozyClient.fetchPolicies"></a>
-
-### CozyClient.fetchPolicies
-Use those fetch policies with `<Query />` to limit the number of re-fetch.
-
-**Kind**: static property of [<code>CozyClient</code>](#CozyClient)  
-**Example**  
-```
-const olderThan30s = CozyClient.fetchPolicies.olderThan(30 * 1000)
-<Query fetchPolicy={olderThan30s} />
-```
-
-* [.fetchPolicies](#CozyClient.fetchPolicies)
-    * [.olderThan(delay)](#CozyClient.fetchPolicies.olderThan) ⇒ <code>function</code>
-    * [.noFetch()](#CozyClient.fetchPolicies.noFetch)
-
-<a name="CozyClient.fetchPolicies.olderThan"></a>
-
-#### fetchPolicies.olderThan(delay) ⇒ <code>function</code>
-Returns a fetchPolicy that will only re-fetch queries that are older
-than `<delay>` ms.
-
-**Kind**: static method of [<code>fetchPolicies</code>](#CozyClient.fetchPolicies)  
-**Returns**: <code>function</code> - Fetch policy to be used with `<Query />`  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| delay | <code>Number</code> | Milliseconds since the query has been fetched |
-
-<a name="CozyClient.fetchPolicies.noFetch"></a>
-
-#### fetchPolicies.noFetch()
-Fetch policy that deactivates any fetching.
-
-**Kind**: static method of [<code>fetchPolicies</code>](#CozyClient.fetchPolicies)  
 <a name="CozyClient.fromOldClient"></a>
 
 ### CozyClient.fromOldClient()
 To help with the transition from cozy-client-js to cozy-client, it is possible to instantiate
-a client with an instance of cozy-client-js.
+a client with a cookie-based instance of cozy-client-js.
+
+**Kind**: static method of [<code>CozyClient</code>](#CozyClient)  
+<a name="CozyClient.fromOldOAuthClient"></a>
+
+### CozyClient.fromOldOAuthClient()
+To help with the transition from cozy-client-js to cozy-client, it is possible to instantiate
+a client with an OAuth-based instance of cozy-client-js.
+
+Warning: unlike other instantiators, this one needs to be awaited.
 
 **Kind**: static method of [<code>CozyClient</code>](#CozyClient)  
 <a name="CozyClient.fromEnv"></a>
@@ -854,6 +1057,29 @@ a client with an instance of cozy-client-js.
 In konnector/service context, CozyClient can be instantiated from environment variables
 
 **Kind**: static method of [<code>CozyClient</code>](#CozyClient)  
+<a name="CozyClient.registerHook"></a>
+
+### CozyClient.registerHook(doctype, name, fn)
+Hooks are an observable system for events on documents.
+There are at the moment only 2 hooks available.
+
+- before:destroy, called just before a document is destroyed via CozyClient::destroy
+- after:destroy, called after a document is destroyed via CozyClient::destroy
+
+**Kind**: static method of [<code>CozyClient</code>](#CozyClient)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| doctype | <code>string</code> | Doctype on which the hook will be registered |
+| name | <code>string</code> | Name of the hook |
+| fn | <code>function</code> | Callback to be executed |
+
+**Example**  
+```
+CozyClient.registerHook('io.cozy.bank.accounts', 'before:destroy', () => {
+  console.log('A io.cozy.bank.accounts is being destroyed')
+})
+```
 <a name="QueryDefinition"></a>
 
 ## QueryDefinition
@@ -863,7 +1089,7 @@ from a Cozy. `QueryDefinition`s are sent to links.
 **Kind**: global class  
 
 * [QueryDefinition](#QueryDefinition)
-    * [new QueryDefinition(doctype, id, ids, selector, fields, indexedFields, sort, includes, referenced, limit, skip)](#new_QueryDefinition_new)
+    * [new QueryDefinition(doctype, id, ids, selector, fields, indexedFields, sort, includes, referenced, limit, skip, cursor, bookmark)](#new_QueryDefinition_new)
     * [.getById(id)](#QueryDefinition+getById) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
     * [.getByIds(ids)](#QueryDefinition+getByIds) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
     * [.where(selector)](#QueryDefinition+where) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
@@ -874,18 +1100,19 @@ from a Cozy. `QueryDefinition`s are sent to links.
     * [.limitBy(limit)](#QueryDefinition+limitBy) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
     * [.offset(skip)](#QueryDefinition+offset) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
     * [.offsetCursor(cursor)](#QueryDefinition+offsetCursor) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
+    * [.offsetBookmark(bookmark)](#QueryDefinition+offsetBookmark) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
     * [.referencedBy(document)](#QueryDefinition+referencedBy) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
 
 <a name="new_QueryDefinition_new"></a>
 
-### new QueryDefinition(doctype, id, ids, selector, fields, indexedFields, sort, includes, referenced, limit, skip)
+### new QueryDefinition(doctype, id, ids, selector, fields, indexedFields, sort, includes, referenced, limit, skip, cursor, bookmark)
 
 | Param | Type | Description |
 | --- | --- | --- |
 | doctype | <code>string</code> | The doctype of the doc. |
 | id | <code>string</code> | The id of the doc. |
 | ids | <code>Array</code> | The ids of the docs. |
-| selector | <code>Object</code> | The selector to query the docs. |
+| selector | <code>object</code> | The selector to query the docs. |
 | fields | <code>Array</code> | The fields to return. |
 | indexedFields | <code>Array</code> | The fields to index. |
 | sort | <code>Array</code> | The sorting params. |
@@ -893,6 +1120,8 @@ from a Cozy. `QueryDefinition`s are sent to links.
 | referenced | <code>string</code> | The referenced document. |
 | limit | <code>number</code> | The document's limit to return. |
 | skip | <code>number</code> | The number of docs to skip. |
+| cursor | <code>number</code> | The cursor to paginate views. |
+| bookmark | <code>number</code> | The bookmark to paginate mango queries. |
 
 <a name="QueryDefinition+getById"></a>
 
@@ -929,7 +1158,7 @@ Each field passed in the selector will be indexed, except if the indexField opti
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>Object</code> | The Mango selector. |
+| selector | <code>object</code> | The Mango selector. |
 
 <a name="QueryDefinition+select"></a>
 
@@ -1024,6 +1253,21 @@ Use the last docid of each query as startkey_docid to paginate or leave blank fo
 | --- | --- | --- |
 | cursor | <code>Array</code> | The cursor for pagination. |
 
+<a name="QueryDefinition+offsetBookmark"></a>
+
+### queryDefinition.offsetBookmark(bookmark) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
+Use [bookmark](https://docs.couchdb.org/en/2.2.0/api/database/find.html#pagination) pagination.
+Note this only applies for mango-queries (not views) and is way more efficient than skip pagination.
+The bookmark is a string returned by the _find response and can be seen as a pointer in
+the index for the next query.
+
+**Kind**: instance method of [<code>QueryDefinition</code>](#QueryDefinition)  
+**Returns**: [<code>QueryDefinition</code>](#QueryDefinition) - The QueryDefinition object.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| bookmark | <code>string</code> | The bookmark to continue a previous paginated query. |
+
 <a name="QueryDefinition+referencedBy"></a>
 
 ### queryDefinition.referencedBy(document) ⇒ [<code>QueryDefinition</code>](#QueryDefinition)
@@ -1034,7 +1278,7 @@ Use the [file reference system](https://docs.cozy.io/en/cozy-stack/references-do
 
 | Param | Type | Description |
 | --- | --- | --- |
-| document | <code>Object</code> | The reference document |
+| document | <code>object</code> | The reference document |
 
 <a name="Schema"></a>
 
@@ -1086,6 +1330,334 @@ Returns the relationship for a given doctype/name
 Validates a document considering the descriptions in schema.attributes.
 
 **Kind**: instance method of [<code>Schema</code>](#Schema)  
+<a name="generateWebLink"></a>
+
+## generateWebLink ⇒ <code>string</code>
+generateWebLink - Construct a link to a web app
+
+This function does not get its cozy url from a CozyClient instance so it can
+be used to build urls that point to other Cozies than the user's own Cozy.
+This is useful when pointing to the Cozy of the owner of a shared note for
+example.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - Generated URL  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | Object of options |
+| options.cozyUrl | <code>string</code> | Base URL of the cozy, eg. cozy.tools or test.mycozy.cloud |
+| options.searchParams | <code>Array</code> | Array of search parameters as [key, value] arrays, eg. ['username', 'bob'] |
+| options.pathname | <code>string</code> | Path to a specific part of the app, eg. /public |
+| options.hash | <code>string</code> | Path inside the app, eg. /files/test.jpg |
+| options.slug | <code>string</code> | Slug of the app |
+| options.subDomainType | <code>string</code> | Whether the cozy is using flat or nested subdomains. Defaults to flat. |
+
+<a name="getMutedErrors"></a>
+
+## getMutedErrors ⇒ <code>Array</code>
+getMutedErrors - Returns the list of errors that have been muted for the given account
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - An array of errors with a `type` and `mutedAt` field  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| account | <code>object</code> | io.cozy.accounts |
+
+<a name="muteError"></a>
+
+## muteError ⇒ <code>object</code>
+muteError - Adds an error to the list of muted errors for the given account
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - An updated io.cozy.accounts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| account | <code>object</code> | io.cozy.accounts |
+| errorType | <code>string</code> | The type of the error to mute |
+
+<a name="getStoreURL"></a>
+
+## getStoreURL ⇒ <code>string</code>
+Returns the store URL of an app/konnector
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - URL as string  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [appData] | <code>Array</code> | <code>[]</code> | Apps data, as returned by endpoint /apps/ or /konnectors |
+| [app] | <code>object</code> | <code>{}</code> | AppObject |
+
+<a name="getStoreInstallationURL"></a>
+
+## getStoreInstallationURL ⇒ <code>string</code>
+Returns the store URL to install/update an app/konnector
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - URL as string  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [appData] | <code>Array</code> | <code>[]</code> | Apps data, as returned by endpoint /apps/ or /konnectors/ |
+| [app] | <code>object</code> | <code>{}</code> | AppObject |
+
+<a name="isInstalled"></a>
+
+## isInstalled ⇒ <code>object</code>
+**Kind**: global constant  
+**Returns**: <code>object</code> - The io.cozy.app is installed or undefined if not  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| apps | <code>Array</code> | Array of apps returned by /apps /konnectors |
+| wantedApp | <code>object</code> | io.cozy.app with at least a slug |
+
+<a name="getUrl"></a>
+
+## getUrl ⇒ <code>string</code>
+**Kind**: global constant  
+**Returns**: <code>string</code> - url to the app  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| app | <code>object</code> | io.cozy.apps document |
+
+<a name="getAppDisplayName"></a>
+
+## getAppDisplayName ⇒ <code>string</code>
+getAppDisplayName - Combines the translated prefix and name of the app into a single string.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - Name of the app suitable for display  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| app | <code>object</code> | io.cozy.apps or io.cozy.konnectors document |
+| lang | <code>string</code> | Locale to use |
+
+<a name="isFile"></a>
+
+## isFile
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>File</code> | io.cozy.files |
+
+<a name="isDirectory"></a>
+
+## isDirectory
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>File</code> | io.cozy.files |
+
+<a name="isNote"></a>
+
+## isNote
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>File</code> | io.cozy.files |
+
+<a name="isShortcurt"></a>
+
+## isShortcurt ⇒ <code>boolean</code>
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - true if the file is a shortcut  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>File</code> | io.cozy.files |
+
+<a name="shouldDisplayOffers"></a>
+
+## shouldDisplayOffers
+Returns whether an instance is concerned by our offers
+
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>object</code> | Object containing all the results from /settings/* |
+| data.context | <code>object</code> | Object returned by /settings/context |
+| data.instance | <code>object</code> | Object returned by /settings/instance |
+| data.diskUsage | <code>object</code> | Object returned by /settings/disk-usage |
+
+<a name="hasAnOffer"></a>
+
+## hasAnOffer
+Returns if an instance has subscribed to one of our offers
+
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>object</code> | Object containing all the results from /settings/* |
+| data.context | <code>object</code> | Object returned by /settings/context |
+| data.instance | <code>object</code> | Object returned by /settings/instance |
+| data.diskUsage | <code>object</code> | Object returned by /settings/disk-usage |
+
+<a name="buildPremiumLink"></a>
+
+## buildPremiumLink
+Returns the link to the Premium page on the Cozy's Manager
+
+**Kind**: global constant  
+
+| Param | Type |
+| --- | --- |
+| instanceInfo | <code>object</code> | 
+
+<a name="generatePrivateUrl"></a>
+
+## generatePrivateUrl
+**Kind**: global constant  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| notesAppUrl | <code>string</code> | URL to the Notes App (https://notes.foo.mycozy.cloud) |
+| file | <code>object</code> | io.cozy.files object |
+
+<a name="fetchURL"></a>
+
+## fetchURL ⇒ <code>string</code>
+Fetch and build an URL to open a note.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - url  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| client | <code>object</code> | CozyClient instance |
+| file | <code>object</code> | io.cozy.file object |
+
+<a name="triggerStates"></a>
+
+## triggerStates
+Trigger states come from /jobs/triggers
+
+**Kind**: global constant  
+
+* [triggerStates](#triggerStates)
+    * [.getLastExecution()](#triggerStates.getLastExecution)
+    * [.getLastsuccess()](#triggerStates.getLastsuccess)
+    * [.isErrored()](#triggerStates.isErrored)
+    * [.getLastErrorType()](#triggerStates.getLastErrorType)
+
+<a name="triggerStates.getLastExecution"></a>
+
+### triggerStates.getLastExecution()
+Returns when the trigger was last executed. Need a trigger
+
+**Kind**: static method of [<code>triggerStates</code>](#triggerStates)  
+<a name="triggerStates.getLastsuccess"></a>
+
+### triggerStates.getLastsuccess()
+Returns when the trigger was last successfully executed.
+
+**Kind**: static method of [<code>triggerStates</code>](#triggerStates)  
+<a name="triggerStates.isErrored"></a>
+
+### triggerStates.isErrored()
+Returns whether last job failed
+
+**Kind**: static method of [<code>triggerStates</code>](#triggerStates)  
+<a name="triggerStates.getLastErrorType"></a>
+
+### triggerStates.getLastErrorType()
+Returns the type of the last error to occur
+
+**Kind**: static method of [<code>triggerStates</code>](#triggerStates)  
+<a name="fetchPolicies"></a>
+
+## fetchPolicies
+Use those fetch policies with `<Query />` to limit the number of re-fetch.
+
+**Kind**: global constant  
+**Example**  
+```
+import { fetchPolicies } from 'cozy-client'
+const olderThan30s = fetchPolicies.olderThan(30 * 1000)
+<Query fetchPolicy={olderThan30s} />
+```
+
+* [fetchPolicies](#fetchPolicies)
+    * [.olderThan(delay)](#fetchPolicies.olderThan) ⇒ <code>function</code>
+    * [.noFetch()](#fetchPolicies.noFetch)
+
+<a name="fetchPolicies.olderThan"></a>
+
+### fetchPolicies.olderThan(delay) ⇒ <code>function</code>
+Returns a fetchPolicy that will only re-fetch queries that are older
+than `<delay>` ms.
+
+**Kind**: static method of [<code>fetchPolicies</code>](#fetchPolicies)  
+**Returns**: <code>function</code> - Fetch policy to be used with `<Query />`  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| delay | <code>number</code> | Milliseconds since the query has been fetched |
+
+<a name="fetchPolicies.noFetch"></a>
+
+### fetchPolicies.noFetch()
+Fetch policy that deactivates any fetching.
+
+**Kind**: static method of [<code>fetchPolicies</code>](#fetchPolicies)  
+<a name="Q"></a>
+
+## Q
+Helper to create a QueryDefinition. Recommended way to create
+query definitions.
+
+**Kind**: global constant  
+**Example**  
+```
+import { Q } from 'cozy-client'
+
+const qDef = Q('io.cozy.todos').where({ _id: '1234' })
+```
+<a name="isQueryLoading"></a>
+
+## isQueryLoading
+Returns whether the result of a query (given via queryConnect or Query)
+is loading.
+
+**Kind**: global constant  
+<a name="hasQueryBeenLoaded"></a>
+
+## hasQueryBeenLoaded
+Returns whether a query has been loaded at least once
+
+**Kind**: global constant  
+<a name="createClientInteractive"></a>
+
+## createClientInteractive()
+Creates a client with interactive authentication.
+
+- Will start an OAuth flow and open an authentication page
+- Starts a local server to listen for the oauth callback
+- Resolves with the client after user authentication
+
+**Kind**: global function  
+**Params**: <code>Object</code> clientOptions Same as CozyClient::constructor.  
+**Example**  
+```
+import { createClientInteractive } from 'cozy-client/dist/cli'
+await createClientInteractive({
+  uri: 'http://cozy.tools:8080',
+  scope: ['io.cozy.bills'],
+  oauth: {
+    softwareID: 'my-cli-application-using-bills'
+  }
+})
+```
 <a name="withClient"></a>
 
 ## withClient(Component) ⇒ <code>function</code>
@@ -1127,6 +1699,75 @@ Normalize app manifest, retrocompatibility for old manifests
 | --- | --- |
 | manifest | <code>Manifest</code> | 
 
+<a name="createMockClient"></a>
+
+## createMockClient() ⇒ [<code>CozyClient</code>](#CozyClient)
+Creates a client suitable for use in tests
+
+- client.{query,save} are mocked
+- client.stackClient.fetchJSON is mocked
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options.queries | <code>object</code> | Prefill queries inside the store |
+| options.remote | <code>object</code> | Mock data from the server |
+| options.clientOptions | <code>object</code> | Options passed to the client |
+
+<a name="normalize"></a>
+
+## normalize(file) ⇒ <code>object</code>
+Normalizes an object representing a io.cozy.files object
+
+Ensures existence of `_id` and `_type`
+
+**Kind**: global function  
+**Returns**: <code>object</code> - full normalized object  
+**Access**: public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>object</code> | object representing the file |
+
+<a name="ensureFilePath"></a>
+
+## ensureFilePath(file, parent) ⇒ <code>object</code>
+Ensure the file has a `path` attribute, or build it
+
+**Kind**: global function  
+**Returns**: <code>object</code> - file object with path attribute  
+**Access**: public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>object</code> | object representing the file |
+| parent | <code>object</code> | parent directory for the file |
+
+<a name="getParentFolderId"></a>
+
+## getParentFolderId(file) ⇒ <code>string</code> \| <code>null</code>
+Get the id of the parent folder (`null` for the root folder)
+
+**Kind**: global function  
+**Returns**: <code>string</code> \| <code>null</code> - id of the parent folder, if any  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>object</code> | io.cozy.files document |
+
+<a name="isForType"></a>
+
+## isForType(permission, type)
+Checks if the permission item is about a specific doctype
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| permission | [<code>PermissionItem</code>](#PermissionItem) | - |
+| type | <code>string</code> | doctype |
+
 <a name="currentResult"></a>
 
 ## currentResult() ⇒ <code>HydratedQueryState</code>
@@ -1136,7 +1777,7 @@ Returns the query from the store with hydrated documents.
 <a name="fetchMore"></a>
 
 ## fetchMore()
-Generates and execute a query that is offsetted by the number of documents
+Generates and executes a query that is offsetted by the number of documents
 we have in the store.
 
 **Kind**: global function  
@@ -1153,4 +1794,38 @@ Rejects with canceled: true as soon as cancel is called
 | Param | Type |
 | --- | --- |
 | promise | <code>Promise</code> | 
+
+<a name="QueryState"></a>
+
+## QueryState : <code>object</code>
+**Kind**: global typedef  
+<a name="Document"></a>
+
+## Document : <code>object</code>
+Couchdb document like an io.cozy.files
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type |
+| --- | --- |
+| _id | <code>string</code> | 
+| _type | <code>string</code> | 
+
+<a name="PermissionVerb"></a>
+
+## PermissionVerb : <code>&#x27;ALL&#x27;</code> \| <code>&#x27;GET&#x27;</code> \| <code>&#x27;PATCH&#x27;</code> \| <code>&#x27;POST&#x27;</code> \| <code>&#x27;PUT&#x27;</code> \| <code>&#x27;DELETE&#x27;</code>
+**Kind**: global typedef  
+<a name="PermissionItem"></a>
+
+## PermissionItem : <code>object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| verbs | [<code>Array.&lt;PermissionVerb&gt;</code>](#PermissionVerb) | ALL, GET, PUT, PATCH, DELETE, POST… |
+| selector | <code>string</code> | defaults to `id` |
+| values | <code>Array.&lt;string&gt;</code> |  |
+| type | <code>string</code> | a couch db database like 'io.cozy.files' |
 

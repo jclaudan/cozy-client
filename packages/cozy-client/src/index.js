@@ -4,6 +4,7 @@ export { default as StackLink } from './StackLink'
 export { default as compose } from 'lodash/flow'
 export {
   QueryDefinition,
+  Q,
   Mutations,
   MutationTypes,
   getDoctypeFromOperation
@@ -16,8 +17,8 @@ export {
   HasManyInPlace,
   HasManyTriggers
 } from './associations'
-export { dehydrate } from './helpers'
-export { cancelable } from './utils'
+export { dehydrate, generateWebLink } from './helpers'
+export { cancelable, isQueryLoading, hasQueryBeenLoaded } from './utils'
 export { getQueryFromState } from './store'
 export { default as Registry } from './registry'
 
@@ -30,3 +31,12 @@ export { default as withMutation } from './withMutation'
 export { default as withMutations } from './withMutations'
 export { default as Query } from './Query'
 export { queryConnect, withClient } from './hoc'
+
+import * as models from './models'
+export { models }
+
+export { default as fetchPolicies } from './policies'
+
+export * from './mock'
+
+export * from './hooks'

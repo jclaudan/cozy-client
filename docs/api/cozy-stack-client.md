@@ -21,12 +21,18 @@ specific collections.</p>
 special routes are to be used, and there is a notion of referenced files, aka
 files associated to a specific document</p>
 </dd>
+<dt><a href="#NotesCollection">NotesCollection</a></dt>
+<dd><p>Implements <code>DocumentCollection</code> API to interact with the /notes endpoint of the stack</p>
+</dd>
 <dt><a href="#OAuthClient">OAuthClient</a></dt>
 <dd><p>Specialized <code>CozyStackClient</code> for mobile, implementing stack registration
 through OAuth.</p>
 </dd>
 <dt><a href="#PermissionCollection">PermissionCollection</a></dt>
 <dd><p>Implements <code>DocumentCollection</code> API along with specific methods for <code>io.cozy.permissions</code>.</p>
+</dd>
+<dt><a href="#SettingsCollection">SettingsCollection</a></dt>
+<dd><p>Implements <code>DocumentCollection</code> API to interact with the /settings endpoint of the stack</p>
 </dd>
 <dt><a href="#SharingCollection">SharingCollection</a></dt>
 <dd><p>Implements the <code>DocumentCollection</code> API along with specific methods for
@@ -40,8 +46,11 @@ through OAuth.</p>
 ## Constants
 
 <dl>
-<dt><a href="#dontThrowNotFoundError">dontThrowNotFoundError</a> ⇒ <code>Object</code></dt>
+<dt><a href="#dontThrowNotFoundError">dontThrowNotFoundError</a> ⇒ <code>object</code></dt>
 <dd><p>Handler for error response which return a empty value for &quot;not found&quot; error</p>
+</dd>
+<dt><a href="#getPermissionsFor">getPermissionsFor</a> ⇒ <code>object</code></dt>
+<dd><p>Build a permission set</p>
 </dd>
 </dl>
 
@@ -93,20 +102,20 @@ specific collections.
 **Kind**: global class  
 <a name="Collection.get"></a>
 
-### Collection.get(stackClient, endpoint, options) ⇒ <code>Object</code>
+### Collection.get(stackClient, endpoint, options) ⇒ <code>object</code>
 Utility method aimed to return only one document.
 
 **Kind**: static method of [<code>Collection</code>](#Collection)  
-**Returns**: <code>Object</code> - JsonAPI response containing normalized
+**Returns**: <code>object</code> - JsonAPI response containing normalized
 document as data attribute  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| stackClient | <code>Object</code> |  |
-| endpoint | <code>String</code> | Stack endpoint |
-| options | <code>Object</code> |  |
+| stackClient | <code>object</code> |  |
+| endpoint | <code>string</code> | Stack endpoint |
+| options | <code>object</code> |  |
 | options.normalize | <code>Func</code> | Callback to normalize response data (default `data => data`) |
-| options.method | <code>String</code> | HTTP method (default `GET`) |
+| options.method | <code>string</code> | HTTP method (default `GET`) |
 
 <a name="CozyStackClient"></a>
 
@@ -117,9 +126,11 @@ Main API against the `cozy-stack` server.
 
 * [CozyStackClient](#CozyStackClient)
     * [.collection(doctype)](#CozyStackClient+collection) ⇒ [<code>DocumentCollection</code>](#DocumentCollection)
-    * [.fetch(method, path, body, options)](#CozyStackClient+fetch) ⇒ <code>Object</code>
+    * [.fetch(method, path, body, options)](#CozyStackClient+fetch) ⇒ <code>object</code>
+    * [.checkForRevocation()](#CozyStackClient+checkForRevocation)
     * [.refreshToken()](#CozyStackClient+refreshToken) ⇒ <code>Promise</code>
-    * [.fetchJSON(method, path, body, options)](#CozyStackClient+fetchJSON) ⇒ <code>Object</code>
+    * [.fetchJSON(method, path, body, options)](#CozyStackClient+fetchJSON) ⇒ <code>object</code>
+    * [.setToken(token)](#CozyStackClient+setToken)
     * [.getAccessToken()](#CozyStackClient+getAccessToken) ⇒ <code>string</code>
 
 <a name="CozyStackClient+collection"></a>
@@ -131,11 +142,11 @@ Creates a [DocumentCollection](#DocumentCollection) instance.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| doctype | <code>String</code> | The collection doctype. |
+| doctype | <code>string</code> | The collection doctype. |
 
 <a name="CozyStackClient+fetch"></a>
 
-### cozyStackClient.fetch(method, path, body, options) ⇒ <code>Object</code>
+### cozyStackClient.fetch(method, path, body, options) ⇒ <code>object</code>
 Fetches an endpoint in an authorized way.
 
 **Kind**: instance method of [<code>CozyStackClient</code>](#CozyStackClient)  
@@ -146,11 +157,17 @@ Fetches an endpoint in an authorized way.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| method | <code>String</code> | The HTTP method. |
-| path | <code>String</code> | The URI. |
-| body | <code>Object</code> | The payload. |
-| options | <code>Object</code> |  |
+| method | <code>string</code> | The HTTP method. |
+| path | <code>string</code> | The URI. |
+| body | <code>object</code> | The payload. |
+| options | <code>object</code> |  |
 
+<a name="CozyStackClient+checkForRevocation"></a>
+
+### cozyStackClient.checkForRevocation()
+Returns whether the client has been revoked on the server
+
+**Kind**: instance method of [<code>CozyStackClient</code>](#CozyStackClient)  
 <a name="CozyStackClient+refreshToken"></a>
 
 ### cozyStackClient.refreshToken() ⇒ <code>Promise</code>
@@ -165,7 +182,7 @@ Retrieves a new app token by refreshing the currently used token.
 
 <a name="CozyStackClient+fetchJSON"></a>
 
-### cozyStackClient.fetchJSON(method, path, body, options) ⇒ <code>Object</code>
+### cozyStackClient.fetchJSON(method, path, body, options) ⇒ <code>object</code>
 Fetches JSON in an authorized way.
 
 **Kind**: instance method of [<code>CozyStackClient</code>](#CozyStackClient)  
@@ -176,10 +193,21 @@ Fetches JSON in an authorized way.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| method | <code>String</code> | The HTTP method. |
-| path | <code>String</code> | The URI. |
-| body | <code>Object</code> | The payload. |
-| options | <code>Object</code> |  |
+| method | <code>string</code> | The HTTP method. |
+| path | <code>string</code> | The URI. |
+| body | <code>object</code> | The payload. |
+| options | <code>object</code> |  |
+
+<a name="CozyStackClient+setToken"></a>
+
+### cozyStackClient.setToken(token)
+Change or set the API token
+
+**Kind**: instance method of [<code>CozyStackClient</code>](#CozyStackClient)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| token | <code>string</code> \| <code>AppToken</code> \| <code>AccessToken</code> | Stack API token |
 
 <a name="CozyStackClient+getAccessToken"></a>
 
@@ -198,7 +226,7 @@ Abstracts a collection of documents of the same doctype, providing CRUD methods 
 * [DocumentCollection](#DocumentCollection)
     * [.all(options)](#DocumentCollection+all) ⇒ <code>Object</code>
     * [.find(selector, options)](#DocumentCollection+find) ⇒ <code>Object</code>
-    * [.get()](#DocumentCollection+get)
+    * [.get(id)](#DocumentCollection+get) ⇒ <code>object</code>
     * [.getAll()](#DocumentCollection+getAll)
     * [.update()](#DocumentCollection+update)
     * [.destroy()](#DocumentCollection+destroy)
@@ -240,15 +268,21 @@ The returned documents are paginated by the stack.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>Object</code> | The Mango selector. |
+| selector | <code>object</code> | The Mango selector. |
 | options | <code>Object</code> | The query options. |
 
 <a name="DocumentCollection+get"></a>
 
-### documentCollection.get()
+### documentCollection.get(id) ⇒ <code>object</code>
 Get a document by id
 
 **Kind**: instance method of [<code>DocumentCollection</code>](#DocumentCollection)  
+**Returns**: <code>object</code> - JsonAPI response containing normalized document as data attribute  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | The document id. |
+
 <a name="DocumentCollection+getAll"></a>
 
 ### documentCollection.getAll()
@@ -298,8 +332,8 @@ Use Couch _changes API
 
 | Param | Type | Description |
 | --- | --- | --- |
-| couchOptions | <code>Object</code> | Couch options for changes https://kutt.it/5r7MNQ |
-| options | <code>Object</code> | { includeDesign: false, includeDeleted: false } |
+| couchOptions | <code>object</code> | Couch options for changes https://kutt.it/5r7MNQ |
+| options | <code>object</code> | { includeDesign: false, includeDeleted: false } |
 
 <a name="FileCollection"></a>
 
@@ -314,6 +348,7 @@ files associated to a specific document
 **Kind**: global class  
 
 * [FileCollection](#FileCollection)
+    * [.get(id)](#FileCollection+get) ⇒ <code>Object</code>
     * [.find(selector, options)](#FileCollection+find) ⇒ <code>Object</code>
     * [.findReferencedBy(document, options)](#FileCollection+findReferencedBy) ⇒ <code>object</code>
     * [.addReferencedBy(document, documents)](#FileCollection+addReferencedBy) ⇒ <code>object</code>
@@ -322,11 +357,30 @@ files associated to a specific document
     * [.removeReferencesTo(document, documents)](#FileCollection+removeReferencesTo) ⇒ <code>object</code>
     * [.restore(id)](#FileCollection+restore) ⇒ <code>Promise</code>
     * [.deleteFilePermanently(id)](#FileCollection+deleteFilePermanently) ⇒ <code>object</code>
+    * [.upload(data, dirPath)](#FileCollection+upload) ⇒ <code>object</code>
+    * [.createFile(data, params)](#FileCollection+createFile)
     * [.updateFile(data, params)](#FileCollection+updateFile) ⇒ <code>object</code>
+    * [.download(file, versionId, filename)](#FileCollection+download)
+    * [.fetchFileContent(id)](#FileCollection+fetchFileContent)
+    * [.getBeautifulSize(file, decimal)](#FileCollection+getBeautifulSize)
     * [.isChildOf(child, parent)](#FileCollection+isChildOf) ⇒ <code>boolean</code>
     * [.createDirectoryByPath(path)](#FileCollection+createDirectoryByPath) ⇒ <code>object</code>
-    * [.updateFileMetadata(id, attributes)](#FileCollection+updateFileMetadata) ⇒ <code>object</code>
+    * [.updateAttributes(id, attributes)](#FileCollection+updateAttributes) ⇒ <code>object</code>
     * [.createFileMetadata(attributes)](#FileCollection+createFileMetadata) ⇒ <code>object</code>
+    * [.updateMetadataAttribute(id, metadata)](#FileCollection+updateMetadataAttribute) ⇒ <code>object</code>
+    * [.doUpload(data, path, options, method)](#FileCollection+doUpload)
+
+<a name="FileCollection+get"></a>
+
+### fileCollection.get(id) ⇒ <code>Object</code>
+Fetches the file's data
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+**Returns**: <code>Object</code> - Information about the file or folder and it's descendents  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | File id |
 
 <a name="FileCollection+find"></a>
 
@@ -344,7 +398,7 @@ The returned documents are paginated by the stack.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| selector | <code>Object</code> | The Mango selector. |
+| selector | <code>object</code> | The Mango selector. |
 | options | <code>Object</code> | The query options. |
 
 <a name="FileCollection+findReferencedBy"></a>
@@ -369,7 +423,7 @@ async findReferencedBy - Returns the list of files referenced by a document — 
 Add referenced_by documents to a file — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#post-filesfile-idrelationshipsreferenced_by
 
  For example, to have an album referenced by a file:
- ```
+```
 addReferencedBy({_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}, [{_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}])
 ```
 
@@ -387,7 +441,7 @@ addReferencedBy({_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}, [{_id: 456
 Remove referenced_by documents from a file — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#delete-filesfile-idrelationshipsreferenced_by
 
  For example, to remove an album reference from a file:
- ```
+```
  removeReferencedBy({_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}, [{_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}])
 ```
 
@@ -405,7 +459,7 @@ Remove referenced_by documents from a file — see https://docs.cozy.io/en/cozy-
 Add files references to a document — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#post-datatypedoc-idrelationshipsreferences
 
  For example, to add a photo to an album:
- ```
+```
  addReferencesTo({_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}, [{_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}])
 ```
 
@@ -423,7 +477,7 @@ Add files references to a document — see https://docs.cozy.io/en/cozy-stack/re
 Remove files references to a document — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#delete-datatypedoc-idrelationshipsreferences
 
  For example, to remove a photo from an album:
- ```
+```
  removeReferencesTo({_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}, [{_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}])
 ```
 
@@ -463,6 +517,32 @@ async deleteFilePermanently - Definitely delete a file
 | --- | --- | --- |
 | id | <code>string</code> | The id of the file to delete |
 
+<a name="FileCollection+upload"></a>
+
+### fileCollection.upload(data, dirPath) ⇒ <code>object</code>
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+**Returns**: <code>object</code> - Created io.cozy.files  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>File</code> \| <code>Blob</code> \| <code>Stream</code> \| <code>string</code> \| <code>ArrayBuffer</code> | file to be uploaded |
+| dirPath | <code>string</code> | Path to upload the file to. ie : /Administative/XXX/ |
+
+<a name="FileCollection+createFile"></a>
+
+### fileCollection.createFile(data, params)
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>File</code> \| <code>Blob</code> \| <code>Stream</code> \| <code>string</code> \| <code>ArrayBuffer</code> | file to be uploaded |
+| params | <code>object</code> | Additionnal parameters |
+| params.name | <code>string</code> | Name of the file |
+| params.dirId | <code>string</code> | Id of the directory you want to upload the file to |
+| params.executable | <code>boolean</code> | If the file is an executable or not |
+| params.metadata | <code>object</code> | io.cozy.files.metadata to attach to the file |
+| params.options | <code>object</code> | Options to pass to doUpload method (additional headers) |
+
 <a name="FileCollection+updateFile"></a>
 
 ### fileCollection.updateFile(data, params) ⇒ <code>object</code>
@@ -479,6 +559,47 @@ updateFile - Updates a file's data
 | params.executable | <code>boolean</code> | Whether the file is executable or not |
 | params.metadata | <code>object</code> | Metadata to be attached to the File io.cozy.file |
 | params.options | <code>object</code> | Options to pass to doUpload method (additional headers) |
+
+<a name="FileCollection+download"></a>
+
+### fileCollection.download(file, versionId, filename)
+Download a file or a specific version of the file
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| file | <code>object</code> |  | io.cozy.files object |
+| versionId | <code>string</code> | <code>null</code> | Id of the io.cozy.files.version |
+| filename | <code>string</code> |  | The name you want for the downloaded file                            (by default the same as the file) |
+
+<a name="FileCollection+fetchFileContent"></a>
+
+### fileCollection.fetchFileContent(id)
+Fetch the binary of a file or a specific version of a file
+Useful for instance when you can't download the file directly
+(via a content-disposition attachement header) and need to store
+it before doing an operation.
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | Id of the io.cozy.files or io.cozy.files.version |
+
+<a name="FileCollection+getBeautifulSize"></a>
+
+### fileCollection.getBeautifulSize(file, decimal)
+Get a beautified size for a given file
+1024B => 1KB
+102404500404B => 95.37 GB
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| file | <code>object</code> | io.cozy.files object |
+| decimal | <code>int</code> | number of decimal |
 
 <a name="FileCollection+isChildOf"></a>
 
@@ -505,10 +626,20 @@ async createDirectoryByPath - Creates one or more folders until the given path e
 | --- | --- |
 | path | <code>string</code> | 
 
-<a name="FileCollection+updateFileMetadata"></a>
+<a name="FileCollection+updateAttributes"></a>
 
-### fileCollection.updateFileMetadata(id, attributes) ⇒ <code>object</code>
-async updateFileMetadata - Updates a file's metadata
+### fileCollection.updateAttributes(id, attributes) ⇒ <code>object</code>
+async updateAttributes - Updates a file / folder's attributes except
+the metadata attribute. If you want to update its metadata attribute,
+then use `updateFileMetadataAttribute` since `metadata` is a specific
+doctype.
+
+For instance, if you want to update the name of a file, you can pass
+attributes = { name: 'newName'}
+
+You can see the attributes for both Folder and File (as they share the
+same doctype they have a few in common) here :
+https://docs.cozy.io/en/cozy-doctypes/docs/io.cozy.files/#iocozyfiles
 
 **Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
 **Returns**: <code>object</code> - Updated document  
@@ -516,7 +647,7 @@ async updateFileMetadata - Updates a file's metadata
 | Param | Type | Description |
 | --- | --- | --- |
 | id | <code>string</code> | File id |
-| attributes | <code>object</code> | New file meta data |
+| attributes | <code>object</code> | New file attributes |
 
 <a name="FileCollection+createFileMetadata"></a>
 
@@ -532,6 +663,107 @@ See https://github.com/cozy/cozy-stack/blob/master/docs/files.md#post-filesuploa
 | --- | --- | --- |
 | attributes | <code>object</code> | The file's metadata |
 
+<a name="FileCollection+updateMetadataAttribute"></a>
+
+### fileCollection.updateMetadataAttribute(id, metadata) ⇒ <code>object</code>
+Updates the metadata attribute of a io.cozy.files
+Creates a new version of the file without having
+to upload again the file's content
+
+To see available content of the metadata attribute
+see : https://docs.cozy.io/en/cozy-doctypes/docs/io.cozy.files_metadata/
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+**Returns**: <code>object</code> - io.cozy.files updated  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | File id |
+| metadata | <code>object</code> | io.cozy.files.metadata attributes |
+
+<a name="FileCollection+doUpload"></a>
+
+### fileCollection.doUpload(data, path, options, method)
+This method should not be called directly to upload a file.
+You should use `createFile`
+
+**Kind**: instance method of [<code>FileCollection</code>](#FileCollection)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| data | <code>File</code> \| <code>Blob</code> \| <code>Stream</code> \| <code>string</code> \| <code>ArrayBuffer</code> |  | file to be uploaded |
+| path | <code>string</code> |  | Uri to call the stack from. Something like `/files/${dirId}?Name=${name}&Type=file&Executable=${executable}&MetadataID=${metadataId}` |
+| options | <code>object</code> |  | Additional headers |
+| method | <code>string</code> | <code>&quot;POST&quot;</code> | POST / PUT / PATCH |
+
+<a name="NotesCollection"></a>
+
+## NotesCollection
+Implements `DocumentCollection` API to interact with the /notes endpoint of the stack
+
+**Kind**: global class  
+
+* [NotesCollection](#NotesCollection)
+    * [.all()](#NotesCollection+all) ⇒ <code>Object</code>
+    * [.destroy(note)](#NotesCollection+destroy) ⇒ <code>Object</code>
+    * [.create(option)](#NotesCollection+create) ⇒ <code>Object</code>
+    * [.fetchURL(note)](#NotesCollection+fetchURL) ⇒ <code>Object</code>
+    * [.getDefaultSchema()](#NotesCollection+getDefaultSchema) ⇒ <code>object</code>
+
+<a name="NotesCollection+all"></a>
+
+### notesCollection.all() ⇒ <code>Object</code>
+Fetches all notes
+
+**Kind**: instance method of [<code>NotesCollection</code>](#NotesCollection)  
+**Returns**: <code>Object</code> - The JSON API conformant response.  
+<a name="NotesCollection+destroy"></a>
+
+### notesCollection.destroy(note) ⇒ <code>Object</code>
+Destroys the note on the server
+
+**Kind**: instance method of [<code>NotesCollection</code>](#NotesCollection)  
+**Returns**: <code>Object</code> - The deleted note  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| note | <code>io.cozy.notes</code> | The note document to destroy |
+| note._id | <code>string</code> | The note's id |
+
+<a name="NotesCollection+create"></a>
+
+### notesCollection.create(option) ⇒ <code>Object</code>
+Create a note
+
+**Kind**: instance method of [<code>NotesCollection</code>](#NotesCollection)  
+**Returns**: <code>Object</code> - The JSON API conformant response.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| option | <code>object</code> |  |
+| option.dir_id | <code>string</code> | dir_id where to create the note |
+
+<a name="NotesCollection+fetchURL"></a>
+
+### notesCollection.fetchURL(note) ⇒ <code>Object</code>
+Returns the details to build the note's url
+
+**Kind**: instance method of [<code>NotesCollection</code>](#NotesCollection)  
+**Returns**: <code>Object</code> - The note's url details  
+**See**: https://github.com/cozy/cozy-stack/blob/master/docs/notes.md#get-notesidopen  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| note | <code>io.cozy.notes</code> | The note document to open |
+| note._id | <code>string</code> | The note's id |
+
+<a name="NotesCollection+getDefaultSchema"></a>
+
+### notesCollection.getDefaultSchema() ⇒ <code>object</code>
+Returns promise mirror schema for a note
+
+**Kind**: instance method of [<code>NotesCollection</code>](#NotesCollection)  
+**Returns**: <code>object</code> - schema  
 <a name="OAuthClient"></a>
 
 ## OAuthClient
@@ -541,6 +773,7 @@ through OAuth.
 **Kind**: global class  
 
 * [OAuthClient](#OAuthClient)
+    * [.doRegistration()](#OAuthClient+doRegistration)
     * [.register()](#OAuthClient+register) ⇒ <code>promise</code>
     * [.unregister()](#OAuthClient+unregister) ⇒ <code>promise</code>
     * [.fetchInformation()](#OAuthClient+fetchInformation) ⇒ <code>promise</code>
@@ -554,10 +787,17 @@ through OAuth.
     * [.setOAuthOptions(options)](#OAuthClient+setOAuthOptions)
     * [.resetClient()](#OAuthClient+resetClient)
 
+<a name="OAuthClient+doRegistration"></a>
+
+### oAuthClient.doRegistration()
+Performs the HTTP call to register the client to the server
+
+**Kind**: instance method of [<code>OAuthClient</code>](#OAuthClient)  
 <a name="OAuthClient+register"></a>
 
 ### oAuthClient.register() ⇒ <code>promise</code>
-Registers the currenly configured client with the OAuth server.
+Registers the currenly configured client with the OAuth server and
+sets internal information from the server response
 
 **Kind**: instance method of [<code>OAuthClient</code>](#OAuthClient)  
 **Returns**: <code>promise</code> - A promise that resolves with a complete list of client information, including client ID and client secret.  
@@ -709,6 +949,7 @@ Implements `DocumentCollection` API along with specific methods for `io.cozy.per
 
 * [PermissionCollection](#PermissionCollection)
     * [.add(document, permission)](#PermissionCollection+add) ⇒ <code>Promise</code>
+    * [.createSharingLink(document, options)](#PermissionCollection+createSharingLink)
     * [.getOwnPermissions()](#PermissionCollection+getOwnPermissions) ⇒ <code>object</code>
 
 <a name="PermissionCollection+add"></a>
@@ -736,12 +977,43 @@ const permissions = await client
     }
  })
 ```
+<a name="PermissionCollection+createSharingLink"></a>
+
+### permissionCollection.createSharingLink(document, options)
+Create a share link
+
+**Kind**: instance method of [<code>PermissionCollection</code>](#PermissionCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| document | <code>Object</code> | cozy document |
+| options | <code>object</code> | options |
+| options.verbs | <code>Array.&lt;string&gt;</code> | explicit permissions to use |
+
 <a name="PermissionCollection+getOwnPermissions"></a>
 
 ### permissionCollection.getOwnPermissions() ⇒ <code>object</code>
 async getOwnPermissions - Gets the permission for the current token
 
 **Kind**: instance method of [<code>PermissionCollection</code>](#PermissionCollection)  
+<a name="SettingsCollection"></a>
+
+## SettingsCollection
+Implements `DocumentCollection` API to interact with the /settings endpoint of the stack
+
+**Kind**: global class  
+<a name="SettingsCollection+get"></a>
+
+### settingsCollection.get(path) ⇒ <code>object</code>
+async get - Calls a route on the /settings API
+
+**Kind**: instance method of [<code>SettingsCollection</code>](#SettingsCollection)  
+**Returns**: <code>object</code> - The response from the route  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| path | <code>string</code> | The setting route to call, eg `instance` or `context` |
+
 <a name="SharingCollection"></a>
 
 ## SharingCollection
@@ -753,6 +1025,10 @@ Implements the `DocumentCollection` API along with specific methods for
 * [SharingCollection](#SharingCollection)
     * [.share(document, recipients, sharingType, description, [previewPath])](#SharingCollection+share)
     * [.getDiscoveryLink(sharingId, sharecode)](#SharingCollection+getDiscoveryLink) ⇒ <code>string</code>
+    * [.addRecipients(sharing, recipients, sharingType)](#SharingCollection+addRecipients)
+    * [.revokeRecipient(sharing, recipientIndex)](#SharingCollection+revokeRecipient)
+    * [.revokeSelf(sharing)](#SharingCollection+revokeSelf)
+    * [.revokeAllRecipients(sharing)](#SharingCollection+revokeAllRecipients)
 
 <a name="SharingCollection+share"></a>
 
@@ -764,7 +1040,7 @@ share - Creates a new sharing. See https://docs.cozy.io/en/cozy-stack/sharing/#p
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | document | <code>object</code> |  | The document to share. Should have and _id and a name. |
-| recipients | <code>array</code> |  | A list of io.cozy.contacts |
+| recipients | <code>Array</code> |  | A list of io.cozy.contacts |
 | sharingType | <code>string</code> |  |  |
 | description | <code>string</code> |  |  |
 | [previewPath] | <code>string</code> | <code>null</code> | Relative URL of the sharings preview page |
@@ -780,6 +1056,54 @@ getDiscoveryLink - Returns the URL of the page that can be used to accept a shar
 | --- | --- |
 | sharingId | <code>string</code> | 
 | sharecode | <code>string</code> | 
+
+<a name="SharingCollection+addRecipients"></a>
+
+### sharingCollection.addRecipients(sharing, recipients, sharingType)
+Add an array of contacts to the Sharing
+
+**Kind**: instance method of [<code>SharingCollection</code>](#SharingCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sharing | <code>object</code> | Sharing Object |
+| recipients | <code>Array</code> | Array of {id:1, type:"io.cozy.contacts"} |
+| sharingType | <code>string</code> | Read and write: two-way. Other only read |
+
+<a name="SharingCollection+revokeRecipient"></a>
+
+### sharingCollection.revokeRecipient(sharing, recipientIndex)
+Revoke only one recipient of the sharing.
+
+**Kind**: instance method of [<code>SharingCollection</code>](#SharingCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sharing | <code>object</code> | Sharing Object |
+| recipientIndex | <code>number</code> | Index of this recipient in the members array of the sharing |
+
+<a name="SharingCollection+revokeSelf"></a>
+
+### sharingCollection.revokeSelf(sharing)
+Remove self from the sharing.
+
+**Kind**: instance method of [<code>SharingCollection</code>](#SharingCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sharing | <code>object</code> | Sharing Object |
+
+<a name="SharingCollection+revokeAllRecipients"></a>
+
+### sharingCollection.revokeAllRecipients(sharing)
+Revoke the sharing for all the members. Must be called
+from the owner's cozy
+
+**Kind**: instance method of [<code>SharingCollection</code>](#SharingCollection)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sharing | <code>object</code> | Sharing Objects |
 
 <a name="TriggerCollection"></a>
 
@@ -855,8 +1179,8 @@ See https://github.com/cozy/cozy-stack/pull/2010
 
 | Param | Type |
 | --- | --- |
-| selector | <code>Object</code> | 
-| options | <code>Object</code> | 
+| selector | <code>object</code> | 
+| options | <code>object</code> | 
 
 <a name="TriggerCollection+launch"></a>
 
@@ -873,17 +1197,32 @@ Force given trigger execution.
 
 <a name="dontThrowNotFoundError"></a>
 
-## dontThrowNotFoundError ⇒ <code>Object</code>
+## dontThrowNotFoundError ⇒ <code>object</code>
 Handler for error response which return a empty value for "not found" error
 
 **Kind**: global constant  
-**Returns**: <code>Object</code> - JsonAPI response with empty data in case of "not
+**Returns**: <code>object</code> - JsonAPI response with empty data in case of "not
 found" error.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | error | <code>Error</code> |  |
-| data | <code>Array</code> \| <code>Object</code> | Data to return in case of "not found" error |
+| data | <code>Array</code> \| <code>object</code> | Data to return in case of "not found" error |
+
+<a name="getPermissionsFor"></a>
+
+## getPermissionsFor ⇒ <code>object</code>
+Build a permission set
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - permissions object that can be sent through /permissions/*  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| document | <code>Object</code> | cozy document |
+| publicLink | <code>boolean</code> | are the permissions for a public link ? |
+| options | <code>object</code> | options |
+| options.verbs | <code>Array.&lt;string&gt;</code> | explicit permissions to use |
 
 <a name="getAccessToken"></a>
 

@@ -1,5 +1,7 @@
+import cloneDeep from 'lodash/cloneDeep'
 import AppCollection, { APPS_DOCTYPE } from './AppCollection'
 import AppToken from './AppToken'
+import AccessToken from './AccessToken'
 import DocumentCollection from './DocumentCollection'
 import FileCollection from './FileCollection'
 import JobCollection, { JOBS_DOCTYPE } from './JobCollection'
@@ -7,6 +9,8 @@ import KonnectorCollection, { KONNECTORS_DOCTYPE } from './KonnectorCollection'
 import SharingCollection from './SharingCollection'
 import PermissionCollection from './PermissionCollection'
 import TriggerCollection, { TRIGGERS_DOCTYPE } from './TriggerCollection'
+import SettingsCollection, { SETTINGS_DOCTYPE } from './SettingsCollection'
+import NotesCollection, { NOTES_DOCTYPE } from './NotesCollection'
 import getIconURL from './getIconURL'
 import logDeprecate from './logDeprecate'
 import errors from './errors'
@@ -17,6 +21,10 @@ const normalizeUri = uri => {
     uri = uri.slice(0, -1)
   }
   return uri
+}
+
+const isRevocationError = err => {
+  return err.message && errors.CLIENT_NOT_FOUND.test(err.message)
 }
 
 /**
@@ -37,8 +45,8 @@ class CozyStackClient {
   /**
    * Creates a {@link DocumentCollection} instance.
    *
-   * @param  {String} doctype The collection doctype.
-   * @return {DocumentCollection}
+   * @param  {string} doctype The collection doctype.
+   * @returns {DocumentCollection}
    */
   collection(doctype) {
     if (!doctype) {
@@ -59,6 +67,10 @@ class CozyStackClient {
         return new TriggerCollection(this)
       case JOBS_DOCTYPE:
         return new JobCollection(this)
+      case SETTINGS_DOCTYPE:
+        return new SettingsCollection(this)
+      case NOTES_DOCTYPE:
+        return new NotesCollection(this)
       default:
         return new DocumentCollection(doctype, this)
     }
@@ -67,11 +79,11 @@ class CozyStackClient {
   /**
    * Fetches an endpoint in an authorized way.
    *
-   * @param  {String} method The HTTP method.
-   * @param  {String} path The URI.
-   * @param  {Object} body The payload.
-   * @param  {Object} options
-   * @return {Object}
+   * @param  {string} method The HTTP method.
+   * @param  {string} path The URI.
+   * @param  {object} body The payload.
+   * @param  {object} options
+   * @returns {object}
    * @throws {FetchError}
    */
   async fetch(method, path, body, opts = {}) {
@@ -94,15 +106,11 @@ class CozyStackClient {
     options.credentials = 'include'
 
     return fetch(this.fullpath(path), options).catch(err => {
-      this.checkForRevocation(err)
+      if (isRevocationError(err)) {
+        this.onRevocationChange(true)
+      }
       throw err
     })
-  }
-
-  checkForRevocation(err) {
-    if (err.message && errors.CLIENT_NOT_FOUND.test(err.message)) {
-      this.onRevocationChange(true)
-    }
   }
 
   onRevocationChange(state) {
@@ -112,7 +120,20 @@ class CozyStackClient {
   }
 
   /**
+   * Returns whether the client has been revoked on the server
+   */
+  async checkForRevocation() {
+    try {
+      await this.fetchInformation()
+      return false
+    } catch (err) {
+      return isRevocationError(err)
+    }
+  }
+
+  /**
    * Retrieves a new app token by refreshing the currently used token.
+   *
    * @throws {Error} The client should already have an access token to use this function
    * @throws {Error} The client couldn't fetch a new token
    * @returns {Promise} A promise that resolves with a new AccessToken object
@@ -162,18 +183,21 @@ class CozyStackClient {
   /**
    * Fetches JSON in an authorized way.
    *
-   * @param  {String} method The HTTP method.
-   * @param  {String} path The URI.
-   * @param  {Object} body The payload.
-   * @param  {Object} options
-   * @return {Object}
+   * @param  {string} method The HTTP method.
+   * @param  {string} path The URI.
+   * @param  {object} body The payload.
+   * @param  {object} options
+   * @returns {object}
    * @throws {FetchError}
    */
   async fetchJSON(method, path, body, options = {}) {
     try {
       return await this.fetchJSONWithCurrentToken(method, path, body, options)
     } catch (e) {
-      if (errors.EXPIRED_TOKEN.test(e.message)) {
+      if (
+        errors.EXPIRED_TOKEN.test(e.message) ||
+        errors.INVALID_TOKEN.test(e.message)
+      ) {
         let token
         try {
           token = await this.refreshToken()
@@ -189,8 +213,10 @@ class CozyStackClient {
   }
 
   async fetchJSONWithCurrentToken(method, path, body, options = {}) {
-    const headers = (options.headers = options.headers || {})
-
+    //Since we modify the object later by adding in some case a
+    //content-type, let's clone this object to scope the modification
+    const clonedOptions = cloneDeep(options)
+    const headers = (clonedOptions.headers = clonedOptions.headers || {})
     headers['Accept'] = 'application/json'
 
     if (method !== 'GET' && method !== 'HEAD' && body !== undefined) {
@@ -199,8 +225,7 @@ class CozyStackClient {
         body = JSON.stringify(body)
       }
     }
-
-    const resp = await this.fetch(method, path, body, options)
+    const resp = await this.fetch(method, path, body, clonedOptions)
     const contentType = resp.headers.get('content-type')
     const isJson = contentType && contentType.indexOf('json') >= 0
     const data = await (isJson ? resp.json() : resp.text())
@@ -236,16 +261,33 @@ class CozyStackClient {
     return this.getAuthorizationHeader()
   }
 
+  /**
+   * Change or set the API token
+   *
+   * @param {string|AppToken|AccessToken} token - Stack API token
+   */
   setToken(token) {
-    this.token = token ? new AppToken(token) : null
-    if (token) {
+    if (!token) {
+      this.token = null
+    } else {
+      if (token.toAuthHeader) {
+        // AppToken or AccessToken
+        this.token = token
+      } else if (typeof token === 'string') {
+        // jwt string
+        this.token = new AppToken(token)
+      } else {
+        console.warn('Cozy-Client: Unknown token format', token)
+        throw new Error('Cozy-Client: Unknown token format')
+      }
       this.onRevocationChange(false)
     }
   }
 
   /**
    * Get the access token string, being an oauth token or an app token
-   * @return {string} token
+   *
+   * @returns {string} token
    */
   getAccessToken() {
     return this.token && this.token.getAccessToken()

@@ -1,3 +1,9 @@
+class ErrorReturned extends String {
+  /**
+   * We need to catch the error and return a special object in
+   * order to be able to delete the memoization if needed
+   */
+}
 /**
  * Delete outdated results from cache
  */
@@ -9,6 +15,12 @@ const garbageCollect = (cache, maxDuration) => {
       delete cache[key]
     }
   }
+}
+
+const isPromise = maybePromise => {
+  return (
+    typeof maybePromise === 'object' && typeof maybePromise.then === 'function'
+  )
 }
 
 /**
@@ -29,9 +41,28 @@ const memoize = (fn, options) => {
         result,
         date: Date.now()
       }
+
+      /**
+       * If the result is a promise and this promise
+       * failed or resolved with a specific error (aka ErrorReturned),
+       * let's remove the result from the cache since we don't want to
+       * memoize error
+       */
+      if (isPromise(result)) {
+        result
+          .then(v => {
+            if (v instanceof ErrorReturned) {
+              delete cache[key]
+            }
+          })
+          .catch(e => {
+            delete cache[key]
+          })
+      }
       return result
     }
   }
 }
 
 export default memoize
+export { ErrorReturned }

@@ -1,6 +1,6 @@
 {
   "name": "cozy-stack-client",
-  "version": "7.0.0",
+  "version": "12.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -21,7 +21,7 @@
     "prepublishOnly": "yarn run build"
   },
   "devDependencies": {
-    "babel-cli": "6.26.0"
+    "@babel/cli": "7.6.2"
   },
   "sideEffects": false
 }

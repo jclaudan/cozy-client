@@ -27,10 +27,10 @@ class Registry {
    * Installs or updates an app from a source.
    *
    * Accepts the terms if the app has them.
-
-   * @param  {RegistryApp} app - App to be installed 
+   *
+   * @param  {RegistryApp} app - App to be installed
    * @param  {string} source - String (ex: registry://drive/stable)
-   * @return {Promise}
+   * @returns {Promise}
    */
   async installApp(app, source) {
     const { slug, terms } = app
@@ -62,19 +62,19 @@ class Registry {
   /**
    * Fetch at most 200 apps from the channel
    *
-   * @param  {string} options.type - "webapp" or "konnector"
-   * @param  {string} options.channel - "dev"/"beta"/"stable"
+   * @param  {string} params.type - "webapp" or "konnector"
+   * @param  {string} params.channel - "dev"/"beta"/"stable"
    *
-   * @return {Array<RegistryApp>}
+   * @returns {Array<RegistryApp>}
    */
-  async fetchApps(options) {
-    const { channel, type } = options
-    const params = {
+  async fetchApps(params) {
+    const { channel, type } = params
+    const searchParams = {
       limit: 200,
       versionsChannel: channel,
       latestChannelVersion: channel
     }
-    let querypart = new URLSearchParams(params).toString()
+    let querypart = new URLSearchParams(searchParams).toString()
     if (type) {
       // Unfortunately, URLSearchParams encodes brackets so we have to do
       // the querypart handling manually
@@ -85,6 +85,26 @@ class Registry {
       `/registry?${querypart}`
     )
     return apps
+  }
+
+  /**
+   * Fetch the list of apps that are in maintenance mode
+   *
+   * @returns {Array<RegistryApp>}
+   */
+  fetchAppsInMaintenance() {
+    return this.client.stackClient.fetchJSON('GET', '/registry/maintenance')
+  }
+
+  /**
+   * Fetch the status of a single app on the registry
+   *
+   * @param  {string} slug - The slug of the app to fetch
+   *
+   * @returns {RegistryApp}
+   */
+  fetchApp(slug) {
+    return this.client.stackClient.fetchJSON('GET', `/registry/${slug}`)
   }
 }
 

@@ -4,7 +4,7 @@
  * before passing them to the React component.
  */
 
-import { getQueryFromState, getRawQueryFromState } from './store'
+import { getRawQueryFromState } from './store'
 
 const hasOwn = Object.prototype.hasOwnProperty
 
@@ -34,20 +34,20 @@ export default class ObservableQuery {
   /**
    * Returns the query from the store with hydrated documents.
    *
-   * @return {HydratedQueryState}
+   * @returns {HydratedQueryState}
    */
   currentResult() {
-    const result = getQueryFromState(this.getStore().getState(), this.queryId)
+    const result = this.client.getQueryFromState(this.queryId, {
+      hydrated: true
+    })
     if (!result.lastFetch) {
       return result
     }
-    const data = this.client.hydrateDocuments(
-      this.definition.doctype,
-      result.data
-    )
     return {
       ...result,
-      data: this.definition.id ? data[0] : data
+      // Weird to have this.definition.id here, maybe it could be getQueryFromState
+      // that should do that
+      data: this.definition.id ? result.data[0] : result.data
     }
   }
 
@@ -56,7 +56,7 @@ export default class ObservableQuery {
   }
 
   /**
-   * Generates and execute a query that is offsetted by the number of documents
+   * Generates and executes a query that is offsetted by the number of documents
    * we have in the store.
    */
   fetchMore() {

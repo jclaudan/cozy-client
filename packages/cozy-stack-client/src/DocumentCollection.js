@@ -13,9 +13,10 @@ const DATABASE_DOES_NOT_EXIST = 'Database does not exist.'
 
 /**
  * Normalize a document, adding its doctype if needed
+ *
  * @param {object} doc - Document to normalize
  * @param {string} doctype
- * @return {object} normalized document
+ * @returns {object} normalized document
  * @private
  */
 export function normalizeDoc(doc = {}, doctype) {
@@ -23,7 +24,8 @@ export function normalizeDoc(doc = {}, doctype) {
   return { id, _id: id, _type: doctype, ...doc }
 }
 
-const flagForDeletion = x => Object.assign({}, x, { _deleted: true })
+const prepareForDeletion = x =>
+  Object.assign({}, omit(x, '_type'), { _deleted: true })
 
 /**
  * Abstracts a collection of documents of the same doctype, providing CRUD methods and other helpers.
@@ -33,6 +35,7 @@ class DocumentCollection {
     this.doctype = doctype
     this.stackClient = stackClient
     this.indexes = {}
+    this.endpoint = `/data/${this.doctype}/`
   }
 
   /**
@@ -40,7 +43,7 @@ class DocumentCollection {
    *
    * @private
    * @param {string} doctype
-   * @return {function} (data, response) => normalizedDocument
+   * @returns {Function} (data, response) => normalizedDocument
    *                                        using `normalizeDoc`
    */
   static normalizeDoctype(doctype) {
@@ -52,7 +55,7 @@ class DocumentCollection {
    *
    * @private
    * @param {string} doctype
-   * @return {function} (data, response) => normalizedDocument
+   * @returns {Function} (data, response) => normalizedDocument
    *                                        using `normalizeDoc`
    */
   static normalizeDoctypeJsonApi(doctype) {
@@ -67,7 +70,7 @@ class DocumentCollection {
    *
    * @private
    * @param {string} doctype
-   * @return {function} (data, response) => normalizedDocument
+   * @returns {Function} (data, response) => normalizedDocument
    *                                        using `normalizeDoc`
    */
   static normalizeDoctypeRawApi(doctype) {
@@ -82,12 +85,12 @@ class DocumentCollection {
    *
    * The returned documents are paginated by the stack.
    *
-   * @param  {{limit, skip, keys}} options The fetch options: pagination & fetch of specific docs.
-   * @return {{data, meta, skip, next}} The JSON API conformant response.
+   * @param  {{limit, skip, bookmark, keys}} options The fetch options: pagination & fetch of specific docs.
+   * @returns {{data, meta, skip, bookmark, next}} The JSON API conformant response.
    * @throws {FetchError}
    */
   async all(options = {}) {
-    const { limit, skip = 0, keys } = options
+    const { limit = 100, skip = 0, bookmark, keys } = options
 
     // If the limit is intentionnally null, we need to use _all_docs, since _normal_docs uses _find and have a hard limit of 100
     const isUsingAllDocsRoute = !!keys || limit === null
@@ -97,7 +100,8 @@ class DocumentCollection {
       include_docs: true,
       limit,
       skip,
-      keys
+      keys,
+      bookmark
     }
     const path = querystring.buildURL(url, params)
 
@@ -132,11 +136,18 @@ class DocumentCollection {
       })
     }
 
+    // The presence of a bookmark doesn’t guarantee that there are more results.
+    // See https://docs.couchdb.org/en/2.2.0/api/database/find.html#pagination
+    const next = bookmark
+      ? resp.rows.length >= limit
+      : skip + resp.rows.length < resp.total_rows
+
     return {
       data,
       meta: { count: isUsingAllDocsRoute ? data.length : resp.total_rows },
       skip: skip,
-      next: skip + resp.rows.length < resp.total_rows
+      bookmark: resp.bookmark,
+      next
     }
   }
 
@@ -145,9 +156,9 @@ class DocumentCollection {
    *
    * The returned documents are paginated by the stack.
    *
-   * @param  {Object} selector The Mango selector.
-   * @param  {{sort, fields, limit, skip, indexId}} options The query options.
-   * @return {{data, meta, skip, next}} The JSON API conformant response.
+   * @param  {object} selector The Mango selector.
+   * @param  {{sort, fields, limit, skip, bookmark, indexId}} options The query options.
+   * @returns {{data, skip, bookmark, next}} The JSON API conformant response.
    * @throws {FetchError}
    */
   async find(selector, options = {}) {
@@ -164,24 +175,26 @@ class DocumentCollection {
     }
     return {
       data: resp.docs.map(doc => normalizeDoc(doc, this.doctype)),
-      // Mango queries don't return the total count of rows, so if next = true,
-      // we return a `meta.count` greater than the count of rows we have so that
-      // 'fetchMore' features would work
-      meta: {
-        count: resp.next ? skip + resp.docs.length + 1 : resp.docs.length
-      },
       next: resp.next,
-      skip
+      skip,
+      bookmark: resp.bookmark
     }
   }
 
   /**
    * Get a document by id
+   *
+   * @param  {string} id The document id.
+   * @returns {object}  JsonAPI response containing normalized document as data attribute
    */
   async get(id) {
-    return Collection.get(this.stackClient, uri`/data/${this.doctype}/${id}`, {
-      normalize: this.constructor.normalizeDoctype(this.doctype)
-    })
+    return Collection.get(
+      this.stackClient,
+      `${this.endpoint}${encodeURIComponent(id)}`,
+      {
+        normalize: this.constructor.normalizeDoctype(this.doctype)
+      }
+    )
   }
 
   /**
@@ -253,6 +266,7 @@ class DocumentCollection {
 
   /**
    * Updates several documents in one batch
+   *
    * @param  {Document[]} docs
    */
   async updateAll(docs) {
@@ -288,15 +302,16 @@ class DocumentCollection {
 
   /**
    * Deletes several documents in one batch
+   *
    * @param  {Document[]} docs - Documents to delete
    */
   destroyAll(docs) {
-    return this.updateAll(docs.map(flagForDeletion))
+    return this.updateAll(docs.map(prepareForDeletion))
   }
 
   async toMangoOptions(selector, options = {}) {
     let { sort, indexedFields } = options
-    const { fields, skip = 0, limit } = options
+    const { fields, skip = 0, limit, bookmark } = options
 
     if (sort && !Array.isArray(sort)) {
       console.warn(
@@ -336,6 +351,7 @@ class DocumentCollection {
       fields: fields ? [...fields, '_id', '_type', 'class'] : undefined,
       limit,
       skip,
+      bookmark,
       sort
     }
   }
@@ -394,8 +410,8 @@ class DocumentCollection {
    * query to work
    *
    * @private
-   * @param  {Object} options - Mango query options
-   * @return {Array} - Fields to index
+   * @param  {object} options - Mango query options
+   * @returns {Array} - Fields to index
    */
   getIndexFields({ selector, sort = [] }) {
     return Array.from(
@@ -409,8 +425,8 @@ class DocumentCollection {
   /**
    * Use Couch _changes API
    *
-   * @param  {Object} couchOptions Couch options for changes https://kutt.it/5r7MNQ
-   * @param  {Object} options      { includeDesign: false, includeDeleted: false }
+   * @param  {object} couchOptions Couch options for changes https://kutt.it/5r7MNQ
+   * @param  {object} options      { includeDesign: false, includeDeleted: false }
    */
   async fetchChanges(couchOptions = {}, options = {}) {
     const haveDocsIds = couchOptions.doc_ids && couchOptions.doc_ids.length > 0

@@ -24,7 +24,7 @@ class SharingCollection extends DocumentCollection {
    * share - Creates a new sharing. See https://docs.cozy.io/en/cozy-stack/sharing/#post-sharings
    *
    * @param  {object} document The document to share. Should have and _id and a name.
-   * @param  {array} recipients A list of io.cozy.contacts
+   * @param  {Array} recipients A list of io.cozy.contacts
    * @param  {string} sharingType
    * @param  {string} description
    * @param  {string=} previewPath Relative URL of the sharings preview page
@@ -67,7 +67,13 @@ class SharingCollection extends DocumentCollection {
       `/sharings/${sharingId}/discovery?sharecode=${sharecode}`
     )
   }
-
+  /**
+   * Add an array of contacts to the Sharing
+   *
+   * @param {object} sharing Sharing Object
+   * @param {Array} recipients Array of {id:1, type:"io.cozy.contacts"}
+   * @param {string} sharingType Read and write: two-way. Other only read
+   */
   async addRecipients(sharing, recipients, sharingType) {
     const recipientsPayload = {
       data: recipients.map(({ _id, _type }) => ({
@@ -95,18 +101,39 @@ class SharingCollection extends DocumentCollection {
     )
     return { data: normalizeSharing(resp.data) }
   }
-
+  /**
+   * Revoke only one recipient of the sharing.
+   *
+   * @param {object} sharing Sharing Object
+   * @param {number} recipientIndex Index of this recipient in the members array of the sharing
+   */
   revokeRecipient(sharing, recipientIndex) {
     return this.stackClient.fetchJSON(
       'DELETE',
       uri`/sharings/${sharing._id}/recipients/${recipientIndex}`
     )
   }
-
+  /**
+   * Remove self from the sharing.
+   *
+   * @param {object} sharing Sharing Object
+   */
   revokeSelf(sharing) {
     return this.stackClient.fetchJSON(
       'DELETE',
       uri`/sharings/${sharing._id}/recipients/self`
+    )
+  }
+  /**
+   * Revoke the sharing for all the members. Must be called
+   * from the owner's cozy
+   *
+   * @param {object} sharing Sharing Objects
+   */
+  revokeAllRecipients(sharing) {
+    return this.stackClient.fetchJSON(
+      'DELETE',
+      uri`/sharings/${sharing._id}/recipients`
     )
   }
 }

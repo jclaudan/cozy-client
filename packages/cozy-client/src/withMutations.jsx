@@ -10,35 +10,18 @@ const makeMutationsObject = (mutations, client, props) => {
   )
 }
 
-const mutationsToPropTypes = mutations => {
-  return Object.keys(makeMutationsObject(mutations)).reduce(
-    (acc, mutationName) => {
-      return { ...acc, [mutationName]: PropTypes.func.isRequired }
-    },
-    {}
-  )
-}
-
 /**
  * @function
- * @description HOC to provide mutations to components. Needs client in context
- * or as prop.
- * @param  {function} mutations One ore more mutations, which are function
+ * @description HOC to provide mutations to components. Needs client in context or as prop.
+ * @deprecated Prefer to use withClient and access directly the client.
+ * @param  {Function} mutations One ore more mutations, which are function
  * taking CozyClient as parameter and returning an object containing one or
  * more mutations as attributes.
- * @return {function} - Component that will receive mutations as props
+ * @returns {Function} - Component that will receive mutations as props
  */
 const withMutations = (...mutations) => WrappedComponent => {
   const wrappedDisplayName =
     WrappedComponent.displayName || WrappedComponent.name || 'Component'
-
-  WrappedComponent.propTypes = {
-    ...WrappedComponent.propTypes,
-    createDocument: PropTypes.func.isRequired,
-    saveDocument: PropTypes.func.isRequired,
-    deleteDocument: PropTypes.func.isRequired,
-    ...mutationsToPropTypes(mutations)
-  }
 
   class Wrapper extends Component {
     static contextTypes = {
@@ -48,6 +31,9 @@ const withMutations = (...mutations) => WrappedComponent => {
     constructor(props, context) {
       super(props, context)
       const client = props.client || context.client
+      console.warn(
+        `Deprecation: withMutations will be removed in the near future, prefer to use withClient to access the client. See https://github.com/cozy/cozy-client/pull/638 for more information.`
+      )
       if (!client) {
         throw new Error(
           `Could not find "client" in either the context or props of ${wrappedDisplayName}`

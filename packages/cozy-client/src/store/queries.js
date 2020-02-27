@@ -1,7 +1,7 @@
 import mapValues from 'lodash/mapValues'
-import union from 'lodash/union'
 import difference from 'lodash/difference'
 import intersection from 'lodash/intersection'
+import concat from 'lodash/concat'
 import isPlainObject from 'lodash/isPlainObject'
 
 import { getDocumentFromSlice } from './documents'
@@ -69,10 +69,7 @@ const query = (state = queryInitialState, action) => {
           response.meta && response.meta.count
             ? response.meta.count
             : response.data.length,
-        data:
-          response.skip === 0
-            ? response.data.map(properId)
-            : [...state.data, ...response.data.map(properId)]
+        data: [...state.data, ...response.data.map(properId)]
       }
     }
     case RECEIVE_QUERY_ERROR:
@@ -141,8 +138,10 @@ const updateData = (query, newData) => {
   const toUpdate = intersection(originalIds, matchedIds)
 
   const changed = toRemove.length || toAdd.length || toUpdate.length
-
-  const updatedData = difference(union(originalIds, toAdd), toRemove)
+  // concat doesn't check duplicates (contrarily to union), which is ok as
+  // toAdd does not contain any id present in originalIds, by construction.
+  // It is also faster than union.
+  const updatedData = difference(concat(originalIds, toAdd), toRemove)
 
   return {
     ...query,

@@ -1,5 +1,4 @@
-import memoize from './memoize'
-
+import memoize, { ErrorReturned } from './memoize'
 const mimeTypes = {
   gif: 'image/gif',
   ico: 'image/vnd.microsoft.icon',
@@ -43,6 +42,7 @@ const fallbacks = async (tries, check) => {
 
 /**
  * Fetch application/konnector that is installed
+ *
  * @private
  */
 const fetchAppOrKonnector = (stackClient, type, slug) =>
@@ -50,6 +50,7 @@ const fetchAppOrKonnector = (stackClient, type, slug) =>
 
 /**
  * Fetch application/konnector from the registry
+ *
  * @private
  */
 const fetchAppOrKonnectorViaRegistry = (stackClient, type, slug) =>
@@ -71,7 +72,6 @@ const _getIconURL = async (stackClient, opts) => {
       throw new Error(`Error while fetching icon ${resp.statusText}`)
     }
   })
-
   let icon = await resp.blob()
   let app
   if (!icon.type) {
@@ -97,14 +97,12 @@ const _getIconURL = async (stackClient, opts) => {
     }
     icon = new Blob([icon], { type: mimeTypes[ext] })
   }
-
   return URL.createObjectURL(icon)
 }
 
 const getIconURL = function() {
   return _getIconURL.apply(this, arguments).catch(e => {
-    console.warn(e)
-    return ''
+    return new ErrorReturned()
   })
 }
 

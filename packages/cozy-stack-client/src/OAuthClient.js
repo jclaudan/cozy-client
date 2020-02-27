@@ -35,7 +35,8 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Checks if the client has his registration information from the server
-   * @returns {boolean}
+   *
+   * @returns {boolean} true if registered, false otherwise
    * @private
    */
   isRegistered() {
@@ -44,6 +45,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Converts a camel-cased data set to snake case, suitable for sending to the OAuth server
+   *
    * @param   {object} data Initial data
    * @returns {object} Formatted data
    * @private
@@ -83,6 +85,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Converts a snake-cased data set to camel case, suitable for internal use
+   *
    * @param   {object} data Initial data
    * @returns {object} Formatted data
    * @private
@@ -108,8 +111,30 @@ class OAuthClient extends CozyStackClient {
     return result
   }
 
+  /** Performs the HTTP call to register the client to the server */
+  doRegistration() {
+    return this.fetchJSON(
+      'POST',
+      '/auth/register',
+      this.snakeCaseOAuthData({
+        redirectURI: this.oauthOptions.redirectURI,
+        clientName: this.oauthOptions.clientName,
+        softwareID: this.oauthOptions.softwareID,
+        clientKind: this.oauthOptions.clientKind,
+        clientURI: this.oauthOptions.clientURI,
+        logoURI: this.oauthOptions.logoURI,
+        policyURI: this.oauthOptions.policyURI,
+        softwareVersion: this.oauthOptions.softwareVersion,
+        notificationPlatform: this.oauthOptions.notificationPlatform,
+        notificationDeviceToken: this.oauthOptions.notificationDeviceToken
+      })
+    )
+  }
+
   /**
-   * Registers the currenly configured client with the OAuth server.
+   * Registers the currenly configured client with the OAuth server and
+   * sets internal information from the server response
+   *
    * @throws {Error} When the client is already registered
    * @returns {promise} A promise that resolves with a complete list of client information, including client ID and client secret.
    */
@@ -128,22 +153,7 @@ class OAuthClient extends CozyStackClient {
       )
     }
 
-    const data = await this.fetchJSON(
-      'POST',
-      '/auth/register',
-      this.snakeCaseOAuthData({
-        redirectURI: this.oauthOptions.redirectURI,
-        clientName: this.oauthOptions.clientName,
-        softwareID: this.oauthOptions.softwareID,
-        clientKind: this.oauthOptions.clientKind,
-        clientURI: this.oauthOptions.clientURI,
-        logoURI: this.oauthOptions.logoURI,
-        policyURI: this.oauthOptions.policyURI,
-        softwareVersion: this.oauthOptions.softwareVersion,
-        notificationPlatform: this.oauthOptions.notificationPlatform,
-        notificationDeviceToken: this.oauthOptions.notificationDeviceToken
-      })
-    )
+    const data = await this.doRegistration()
 
     this.setOAuthOptions({
       ...this.oauthOptions,
@@ -159,6 +169,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Unregisters the currenly configured client with the OAuth server.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @returns {promise}
    */
@@ -177,6 +188,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Fetches the complete set of client information from the server after it has been registered.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @returns {promise}
    */
@@ -197,6 +209,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Overwrites the client own information. This method will update both the local information and the remote information on the OAuth server.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @param   {object} information Set of information to update. Note that some fields such as `clientID` can't be updated.
    * @param   {boolean} resetSecret = false Optionnal, whether to reset the client secret or not
@@ -236,6 +249,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Generates a random state code to be used during the OAuth process
+   *
    * @returns {string}
    */
   generateStateCode() {
@@ -264,6 +278,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Generates the URL that the user should be sent to in order to accept the app's permissions.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @param   {string} stateCode   A random code to be included in the URl for security. Can be generated with `client.generateStateCode()`
    * @param   {Array} scopes = [] An array of permission scopes for the token.
@@ -291,6 +306,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Retrieves the access code contained in the URL to which the user is redirected after accepting the app's permissions (the `redirectURI`).
+   *
    * @throws {Error} The URL should contain the same state code as the one generated with `client.getAuthCodeURL()`. If not, it will throw an error
    * @param   {string} pageURL The redirected page URL, containing the state code and the access code
    * @param   {string} stateCode The state code that was contained in the original URL the user was sent to (see `client.getAuthCodeURL()`)
@@ -311,6 +327,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Exchanges an access code for an access token. This function does **not** update the client's token.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @param   {string} accessCode - The access code contained in the redirection URL — see `client.getAccessCodeFromURL()`
    * @param   {object} oauthOptions — To use when OAuthClient is not yet registered (during login process)
@@ -343,6 +360,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Retrieves a new access token by refreshing the currently used token.
+   *
    * @throws {NotRegisteredException} When the client doesn't have it's registration information
    * @throws {Error} The client should already have an access token to use this function
    * @returns {Promise} A promise that resolves with a new AccessToken object
@@ -387,6 +405,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Updates the client's stored token
+   *
    * @param {string} token = null The new token to use — can be a string, a json object or an AccessToken instance.
    */
   setToken(token) {
@@ -404,6 +423,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Updates the OAuth informations
+   *
    * @param {object} options Map of OAuth options
    */
   setOAuthOptions(options) {
@@ -425,6 +445,7 @@ class OAuthClient extends CozyStackClient {
 
   /**
    * Turns the client's registration access token into a header suitable for HTTP requests. Used in some queries to manipulate the client on the server side.
+   *
    * @returns {string}
    * @private
    */

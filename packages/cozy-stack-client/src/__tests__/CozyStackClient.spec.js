@@ -6,6 +6,7 @@ import DocumentCollection from '../DocumentCollection'
 import JobCollection from '../JobCollection'
 import KonnectorCollection from '../KonnectorCollection'
 import jestFetchMock from 'jest-fetch-mock'
+import AppToken from '../AppToken'
 
 const FAKE_RESPONSE = {
   offset: 0,
@@ -50,6 +51,25 @@ describe('CozyStackClient', () => {
     })
 
     expect(stackClient.konnectors instanceof KonnectorCollection).toBe(true)
+  })
+
+  describe('setToken', () => {
+    it('allows a JWT string', () => {
+      const client = new CozyStackClient(FAKE_INIT_OPTIONS)
+      const jwt =
+        'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhcHAiLCJpYXQiOjE1NzkxOTAyODEsImlzcyI6ImNvenkudG9vbHM6ODA4MCIsInN1YiI6Im5vdGVzIiwic2Vzc2lvbl9pZCI6ImViMjM5NTBlZjY1NmY3MzllYjg4Y2E2MWZhMDA2ZmZiIn0.WvadOrBnidB3HBl8mCRuQUf0E-EFVQzNHzLPO923Zyv67aRguIdQyWvj6abjEHDcmk5OTEICeM7L5Um1tFWNlg'
+      client.setToken(jwt)
+      expect(client.token).toHaveProperty('token', jwt)
+    })
+
+    it('allows an AccessToken', () => {
+      const client = new CozyStackClient(FAKE_INIT_OPTIONS)
+      const jwt =
+        'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhcHAiLCJpYXQiOjE1NzkxOTAyODEsImlzcyI6ImNvenkudG9vbHM6ODA4MCIsInN1YiI6Im5vdGVzIiwic2Vzc2lvbl9pZCI6ImViMjM5NTBlZjY1NmY3MzllYjg4Y2E2MWZhMDA2ZmZiIn0.WvadOrBnidB3HBl8mCRuQUf0E-EFVQzNHzLPO923Zyv67aRguIdQyWvj6abjEHDcmk5OTEICeM7L5Um1tFWNlg'
+      const appToken = new AppToken(jwt)
+      client.setToken(appToken)
+      expect(client.token).toHaveProperty('token', jwt)
+    })
   })
 
   describe('collection', () => {
@@ -289,6 +309,56 @@ describe('CozyStackClient', () => {
         expect(e.message).toMatch(/Not/)
       }
     })
+
+    it('should try to refresh the current token when received an invalid token error', async () => {
+      const client = new CozyStackClient(FAKE_INIT_OPTIONS)
+      global.fetch
+        .mockRejectOnce(
+          new Error(JSON.stringify({ error: 'Invalid JWT token' }))
+        )
+        .once([FAKE_APP_HTML, { status: 200 }])
+        .once([JSON.stringify({ res: 'ok' }), { status: 200 }])
+      await client.fetchJSON('GET', '/test')
+      const token = client.getAccessToken()
+      expect(token).toEqual(FAKE_APP_TOKEN)
+      expect(global.fetch).toHaveBeenLastCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${FAKE_APP_TOKEN}`
+          })
+        })
+      )
+    })
+
+    it('should not change option header even if we recall the method after an expired token for instance', async () => {
+      jest.spyOn(client, 'fetchJSONWithCurrentToken')
+      fetch.mockRejectedValueOnce({ message: 'Expired token' })
+      jest.spyOn(client, 'refreshToken')
+      client.refreshToken.mockResolvedValue(FAKE_APP_TOKEN)
+      await client.fetchJSON(
+        'POST',
+        '/data/io.cozy.files/_index',
+        { index: { fields: ['dir_id', 'type'] } },
+        {}
+      )
+
+      expect(client.refreshToken).toHaveBeenCalled()
+      expect(client.fetchJSONWithCurrentToken).toHaveBeenNthCalledWith(
+        1,
+        'POST',
+        '/data/io.cozy.files/_index',
+        { index: { fields: ['dir_id', 'type'] } },
+        {}
+      )
+      expect(client.fetchJSONWithCurrentToken).toHaveBeenNthCalledWith(
+        2,
+        'POST',
+        '/data/io.cozy.files/_index',
+        { index: { fields: ['dir_id', 'type'] } },
+        {}
+      )
+    })
   })
 
   describe('refreshToken', () => {
@@ -367,5 +437,41 @@ describe('FetchError', () => {
       'url',
       'http://cozy.tools:8080/data/io.cozy.todos'
     )
+  })
+})
+
+describe('checkForRevocation', () => {
+  let fetchInformation, stackClient
+
+  beforeAll(() => {
+    stackClient = new CozyStackClient({})
+
+    stackClient.fetchInformation = () => {
+      return fetchInformation()
+    }
+  })
+
+  it('should detect revocation', async () => {
+    fetchInformation = async () => {
+      throw new Error('Client not found')
+    }
+    const revoked = await stackClient.checkForRevocation()
+    expect(revoked).toBe(true)
+  })
+
+  it('should not trigger false positives 1', async () => {
+    fetchInformation = async () => {
+      throw new Error('No internet')
+    }
+    const revoked = await stackClient.checkForRevocation()
+    expect(revoked).toBe(false)
+  })
+
+  it('should not trigger false positives 2', async () => {
+    fetchInformation = async () => {
+      return
+    }
+    const revoked = await stackClient.checkForRevocation()
+    expect(revoked).toBe(false)
   })
 })

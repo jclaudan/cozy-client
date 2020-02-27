@@ -7,7 +7,7 @@ import {
   attachRelationships
 } from './associations/helpers'
 import { dehydrate } from './helpers'
-import { QueryDefinition, Mutations } from './queries/dsl'
+import { QueryDefinition, Mutations, Q } from './queries/dsl'
 import CozyStackClient, { OAuthClient } from 'cozy-stack-client'
 import { authenticateWithCordova } from './authentication/mobile'
 import optimizeQueryDefinitions from './queries/optimize'
@@ -24,6 +24,7 @@ import {
   getCollectionFromState,
   getDocumentFromState
 } from './store'
+import fetchPolicies from './policies'
 import Schema from './Schema'
 import { chain } from './CozyLink'
 import ObservableQuery from './ObservableQuery'
@@ -35,6 +36,7 @@ import zip from 'lodash/zip'
 import forEach from 'lodash/forEach'
 import get from 'lodash/get'
 import MicroEE from 'microee'
+import { CozyClient as SnapshotClient } from './testing/snapshots'
 
 const ensureArray = arr => (Array.isArray(arr) ? arr : [arr])
 
@@ -44,6 +46,16 @@ const deprecatedHandler = msg => ({
     return target[prop]
   }
 })
+
+/**
+ * @typedef {object} Link
+ * @typedef {object} Mutation
+ * @typedef {object} DocumentCollection
+ * @typedef {object} QueryResult
+ * @typedef {object} HydratedDocument
+ * @typedef {object} ReduxStore
+ * @typedef {object} QueryState
+ */
 
 const TRIGGER_CREATION = 'creation'
 const TRIGGER_UPDATE = 'update'
@@ -58,11 +70,11 @@ const TRIGGER_UPDATE = 'update'
  */
 class CozyClient {
   /**
-   * @param  {Object}       options
+   * @param  {object}       options - Options
    * @param  {Link}         options.link   - Backward compatibility
    * @param  {Array.Link}   options.links  - List of links
-   * @param  {Object}       options.schema - Schema description for each doctypes
-   * @param  {Object}       options.appMetadata - Metadata about the application that will be used in ensureCozyMetadata
+   * @param  {object}       options.schema - Schema description for each doctypes
+   * @param  {object}       options.appMetadata - Metadata about the application that will be used in ensureCozyMetadata
    *
    * Cozy-Client will automatically call `this.login()` if provided with a token and an uri
    */
@@ -75,6 +87,7 @@ class CozyClient {
     this.options = options
     this.idCounter = 1
     this.isLogged = false
+    this.instanceOptions = {}
 
     // Bind handlers
     this.handleRevocationChange = this.handleRevocationChange.bind(this)
@@ -91,6 +104,12 @@ class CozyClient {
 
     // Instances of plugins registered with registerPlugin
     this.plugins = {}
+
+    try {
+      this.loadInstanceOptionsFromDOM()
+    } catch (err) {
+      // not a critical error, we may be in node or the instance options are not on the default HTML element
+    }
 
     if (options.uri && options.token) {
       this.login()
@@ -162,7 +181,7 @@ class CozyClient {
 
   /**
    * To help with the transition from cozy-client-js to cozy-client, it is possible to instantiate
-   * a client with an instance of cozy-client-js.
+   * a client with a cookie-based instance of cozy-client-js.
    */
   static fromOldClient(oldClient, options) {
     return new CozyClient({
@@ -170,6 +189,24 @@ class CozyClient {
       token: oldClient._token.token,
       ...options
     })
+  }
+
+  /**
+   * To help with the transition from cozy-client-js to cozy-client, it is possible to instantiate
+   * a client with an OAuth-based instance of cozy-client-js.
+   *
+   * Warning: unlike other instantiators, this one needs to be awaited.
+   */
+  static async fromOldOAuthClient(oldClient, options) {
+    const hasOauthCreds = oldClient._oauth && oldClient._authcreds != null
+    if (hasOauthCreds) {
+      const token = (await oldClient._authcreds).token
+      return new CozyClient({
+        uri: oldClient._url,
+        token,
+        ...options
+      })
+    }
   }
 
   /** In konnector/service context, CozyClient can be instantiated from environment variables */
@@ -220,9 +257,10 @@ class CozyClient {
    * - "beforeLogin" at the beginning, before links have been set up
    * - "login" when the client is fully logged in and links have been set up
    *
-   * @param  {options.token}   options.token  - If passed, the token is set on the client
-   * @param  {options.uri}   options.uri  - If passed, the uri is set on the client
-   * @return {Promise} - Resolves when all links have been setup and client is fully logged in
+   * @param  {object}   options - Options
+   * @param  {string}   options.token  - If passed, the token is set on the client
+   * @param  {string}   options.uri  - If passed, the uri is set on the client
+   * @returns {Promise} - Resolves when all links have been setup and client is fully logged in
    *
    */
   login(options) {
@@ -270,7 +308,7 @@ class CozyClient {
    * - "beforeLogout" at the beginning, before links have been reset
    * - "login" when the client is fully logged out and links have been reset
    *
-   * @return {Promise} - Resolves when all links have been reset and client is fully logged out
+   * @returns {Promise} - Resolves when all links have been reset and client is fully logged out
    */
   async logout() {
     if (!this.isLogged) {
@@ -281,16 +319,24 @@ class CozyClient {
     this.emit('beforeLogout')
     this.isLogged = false
 
-    try {
-      // unregister client on stack
-      if (
-        this.stackClient.unregister &&
-        (!this.stackClient.isRegistered || this.stackClient.isRegistered())
-      ) {
-        await this.stackClient.unregister()
+    if (this.stackClient instanceof OAuthClient) {
+      try {
+        // unregister client on stack
+        if (
+          this.stackClient.unregister &&
+          (!this.stackClient.isRegistered || this.stackClient.isRegistered())
+        ) {
+          await this.stackClient.unregister()
+        }
+      } catch (err) {
+        console.warn(`Impossible to unregister client on stack: ${err}`)
       }
-    } catch (err) {
-      console.warn(`Impossible to unregister client on stack: ${err}`)
+    } else {
+      try {
+        await this.stackClient.fetch('DELETE', '/auth/login')
+      } catch (err) {
+        console.warn(`Impossible to log out: ${err}`)
+      }
     }
 
     // clean information on links
@@ -311,8 +357,8 @@ class CozyClient {
    * Forwards to a stack client instance and returns
    * a [DocumentCollection]{@link https://docs.cozy.io/en/cozy-client/api/cozy-stack-client/#DocumentCollection} instance.
    *
-   * @param  {String} doctype The collection doctype.
-   * @return {DocumentCollection}
+   * @param  {string} doctype The collection doctype.
+   * @returns {DocumentCollection} Collection corresponding to the doctype
    */
   collection(doctype) {
     return this.getStackClient().collection(doctype)
@@ -323,7 +369,12 @@ class CozyClient {
   }
 
   all(doctype) {
-    return new QueryDefinition({ doctype })
+    console.warn(`
+client.all is deprecated, prefer to use the Q helper to build a new QueryDefinition.
+
+import { Q } from 'cozy-client'
+client.query(Q('io.cozy.bills'))`)
+    return Q(doctype)
   }
 
   find(doctype, selector = undefined) {
@@ -463,6 +514,24 @@ class CozyClient {
     ]
   }
 
+  /**
+   * Hooks are an observable system for events on documents.
+   * There are at the moment only 2 hooks available.
+   *
+   * - before:destroy, called just before a document is destroyed via CozyClient::destroy
+   * - after:destroy, called after a document is destroyed via CozyClient::destroy
+   *
+   * @example
+   * ```
+   * CozyClient.registerHook('io.cozy.bank.accounts', 'before:destroy', () => {
+   *   console.log('A io.cozy.bank.accounts is being destroyed')
+   * })
+   * ```
+   *
+   * @param  {string}   doctype - Doctype on which the hook will be registered
+   * @param  {string}   name    - Name of the hook
+   * @param  {Function} fn      - Callback to be executed
+   */
   static registerHook(doctype, name, fn) {
     CozyClient.hooks = CozyClient.hooks || {}
     const hooks = (CozyClient.hooks[doctype] = CozyClient.hooks[doctype] || {})
@@ -479,6 +548,12 @@ class CozyClient {
     }
   }
 
+  /**
+   * Destroys a document. {before,after}:destroy hooks will be fired.
+   *
+   * @param  {Document} document - Document to be deleted
+   * @returns {Document} The document that has been deleted
+   */
   async destroy(document, mutationOptions = {}) {
     await this.triggerHook('before:destroy', document)
     const res = await this.mutate(
@@ -497,11 +572,27 @@ class CozyClient {
     this.ensureStore()
     const existingQuery = getQueryFromState(this.store.getState(), queryId)
     // Don't trigger the INIT_QUERY for fetchMore() calls
-    if (existingQuery.fetchStatus !== 'loaded' || !queryDefinition.skip) {
+    if (
+      existingQuery.fetchStatus !== 'loaded' ||
+      !queryDefinition.skip ||
+      !queryDefinition.bookmark
+    ) {
       this.dispatch(initQuery(queryId, queryDefinition))
     }
   }
 
+  /**
+   * Executes a query and returns its results.
+   *
+   * Results from the query will be saved internally and can be retrieved via
+   * `getQueryFromState` or directly using `<Query />`. `<Query />` automatically
+   * executes its query when mounted if no fetch policy has been indicated.
+   *
+   * @param  {QueryDefinition} queryDefinition
+   * @param  {string} options - Options
+   * @param  {string} options.as - Names the query so it can be reused (by multiple components for example)
+   * @returns {QueryResult}
+   */
   async query(queryDefinition, { update, ...options } = {}) {
     this.ensureStore()
     const queryId = options.as || this.generateId()
@@ -520,12 +611,24 @@ class CozyClient {
     }
   }
 
+  /**
+   * Will fetch all documents for a `queryDefinition`, automatically fetching more
+   * documents if the total of documents is superior to the pagination limit. Can
+   * result in a lot of network requests.
+   *
+   * @param  {QueryDefinition} queryDefinition
+   * @param  {object} options - Options to the query
+   * @returns {Array} All documents matching the query
+   */
   async queryAll(queryDefinition, options) {
     const documents = []
     let resp = { next: true }
 
     while (resp && resp.next) {
-      resp = await this.query(queryDefinition.offset(documents.length), options)
+      resp = await this.query(
+        queryDefinition.offsetBookmark(resp.bookmark),
+        options
+      )
       documents.push(...resp.data)
     }
 
@@ -570,6 +673,13 @@ class CozyClient {
     }
   }
 
+  /**
+   * Executes a query through links and fetches relationships
+   *
+   * @private
+   * @param  {QueryDefinition} definition
+   * @returns {Response}
+   */
   async requestQuery(definition) {
     const mainResponse = await this.chain.request(definition)
     if (!definition.includes) {
@@ -587,7 +697,8 @@ class CozyClient {
    * Fills the `relationships` attribute of each documents.
    *
    * Can potentially result in several fetch requests.
-   * Queries are optimized before being sent.
+   * Queries are optimized before being sent (multiple single documents queries can be packed into
+   * one multiple document query) for example.
    */
   async fetchRelationships(response, relationshipsByName) {
     const isSingleDoc = !Array.isArray(response.data)
@@ -680,6 +791,15 @@ class CozyClient {
     )
   }
 
+  /**
+   * Returns documents with their relationships resolved according to their schema.
+   * If related documents are not in the store, they will not be fetched automatically.
+   * Instead, the relationships will have null documents.
+   *
+   * @param  {string} doctype
+   * @param  {Array<Document>} documents
+   * @returns {Array<HydratedDocument>}
+   */
   hydrateDocuments(doctype, documents) {
     if (this.options.autoHydrate === false) {
       return documents
@@ -694,10 +814,14 @@ class CozyClient {
   }
 
   /**
-   * Instantiate relationships on a document
+   * Resolves relationships on a document.
    *
    * The original document is kept in the target attribute of
    * the relationship
+   *
+   * @param  {Document} document for which relationships must be resolved
+   * @param  {Schema} schema for the document doctype
+   * @returns {HydratedDocument}
    */
   hydrateDocument(document, schema) {
     if (!document) {
@@ -764,9 +888,9 @@ class CozyClient {
   /**
    * Get a collection of documents from the internal store.
    *
-   * @param {String} type - Doctype of the collection
+   * @param {string} type - Doctype of the collection
    *
-   * @return {Document[]} Array of documents or null if the collection does not exist.
+   * @returns {Document[]} Array of documents or null if the collection does not exist.
    */
   getCollectionFromState(type) {
     try {
@@ -780,10 +904,10 @@ class CozyClient {
   /**
    * Get a document from the internal store.
    *
-   * @param {String} type - Doctype of the document
-   * @param {String} id   - Id of the document
+   * @param {string} type - Doctype of the document
+   * @param {string} id   - Id of the document
    *
-   * @return {Document} Document or null if the object does not exist.
+   * @returns {Document} Document or null if the object does not exist.
    */
   getDocumentFromState(type, id) {
     try {
@@ -797,13 +921,21 @@ class CozyClient {
   /**
    * Get a query from the internal store.
    *
-   * @param {String} id - Id of the query (set via Query.props.as)
+   * @param {string} id - Id of the query (set via Query.props.as)
+   * @param {boolean} options.hydrated - Whether documents should be returned already hydrated (default: false)
    *
-   * @return {QueryState} - Query state or null if it does not exist.
+   * @returns {QueryState} - Query state or null if it does not exist.
    */
-  getQueryFromState(id) {
+  getQueryFromState(id, options = {}) {
+    const hydrated = options.hydrated || false
     try {
-      return getQueryFromState(this.store.getState(), id)
+      const queryResults = getQueryFromState(this.store.getState(), id)
+      const doctype = queryResults.definition && queryResults.definition.doctype
+      const data =
+        hydrated && doctype
+          ? this.hydrateDocuments(doctype, queryResults.data)
+          : queryResults.data
+      return { ...queryResults, data }
     } catch (e) {
       console.warn('Could not getQueryFromState', id, e.message)
       return null
@@ -813,6 +945,7 @@ class CozyClient {
   /**
    * Performs a complete OAuth flow using a Cordova webview for auth.
    * The `register` method's name has been chosen for compat reasons with the Authentication compo.
+   *
    * @param   {string} cozyURL Receives the URL of the cozy instance.
    * @returns {object}   Contains the fetched token and the client information.
    */
@@ -825,7 +958,7 @@ class CozyClient {
   /**
    * Performs a complete OAuth flow, including updating the internal token at the end.
    *
-   * @param   {function} openURLCallback Receives the URL to present to the user as a parameter, and should return a promise that resolves with the URL the user was redirected to after accepting the permissions.
+   * @param   {Function} openURLCallback Receives the URL to present to the user as a parameter, and should return a promise that resolves with the URL the user was redirected to after accepting the permissions.
    * @returns {object}   Contains the fetched token and the client information. These should be stored and used to restore the client.
    */
   async startOAuthFlow(openURLCallback) {
@@ -888,14 +1021,17 @@ class CozyClient {
    * ```
    *
    * @param {ReduxStore} store - A redux store
-   * @param {Boolean} options.force - Will deactivate throwing when client's store already exists
+   * @param {boolean} options.force - Will deactivate throwing when client's store already exists
    */
   setStore(store, { force = false } = {}) {
     if (store === undefined) {
       throw new Error('Store is undefined')
     } else if (this.store && !force) {
       throw new Error(
-        'Client already has a store, it is forbidden to change store.'
+        `Client already has a store, it is forbidden to change store.
+setStore must be called before any query is executed. Try to
+call setStore earlier in your code, preferably just after the
+instantiation of the client.`
       )
     }
 
@@ -906,6 +1042,13 @@ class CozyClient {
     if (!this.store) {
       this.setStore(createStore())
     }
+  }
+
+  /**
+   * Returns whether the client has been revoked on the server
+   */
+  async checkForRevocation() {
+    return this.stackClient.checkForRevocation()
   }
 
   /** Sets public attribute and emits event related to revocation */
@@ -1020,6 +1163,29 @@ class CozyClient {
   }
 
   /**
+   * getInstanceOptions - Returns current instance options, such as domain or app slug
+   *
+   * @returns {object}
+   */
+  getInstanceOptions() {
+    return this.instanceOptions
+  }
+
+  /**
+   * loadInstanceOptionsFromDOM - Loads the dataset injected by the Stack in web pages and exposes it through getInstanceOptions
+   *
+   * @param {string} [selector=[role=application]] A selector for the node that holds the dataset to load
+   *
+   * @returns {void}
+   */
+  loadInstanceOptionsFromDOM(selector = '[role=application]') {
+    const root = document.querySelector(selector)
+    this.instanceOptions = root.dataset.cozy
+      ? JSON.parse(root.dataset.cozy)
+      : { ...root.dataset } // convert from DOMStringMap to plain object
+  }
+
+  /**
    * Directly set the data in the store, without using a query
    * This is useful for cases like Pouch replication, which wants to
    * set some data in the store.
@@ -1032,39 +1198,14 @@ class CozyClient {
       this.dispatch(receiveQueryResult(null, { data }))
     })
   }
-}
 
-/**
- * Use those fetch policies with `<Query />` to limit the number of re-fetch.
- *
- * @example
- * ```
- * const olderThan30s = CozyClient.fetchPolicies.olderThan(30 * 1000)
- * <Query fetchPolicy={olderThan30s} />
- * ```
- */
-CozyClient.fetchPolicies = {
-  /**
-   * Returns a fetchPolicy that will only re-fetch queries that are older
-   * than `<delay>` ms.
-   *
-   * @param  {Number} delay - Milliseconds since the query has been fetched
-   * @return {Function} Fetch policy to be used with `<Query />`
-   */
-  olderThan: delay => queryState => {
-    if (!queryState || !queryState.lastUpdate) {
-      return true
-    } else {
-      const elapsed = Date.now() - queryState.lastUpdate
-      return elapsed > delay
-    }
-  },
-
-  /**
-   * Fetch policy that deactivates any fetching.
-   */
-  noFetch: () => false
+  toJSON() {
+    return new SnapshotClient({ uri: this.options.uri })
+  }
 }
+CozyClient.fetchPolicies = fetchPolicies
+//COZY_CLIENT_VERSION_PACKAGE in replaced by babel. See babel config
+CozyClient.version = 'COZY_CLIENT_VERSION_PACKAGE'
 
 MicroEE.mixin(CozyClient)
 

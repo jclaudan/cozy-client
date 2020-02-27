@@ -282,7 +282,7 @@ describe('FileCollection', () => {
     })
   })
 
-  describe('updateFileMetadata', () => {
+  describe('updateAttributes', () => {
     beforeEach(() => {
       client.fetchJSON.mockReturnValue({ data: [] })
     })
@@ -292,8 +292,28 @@ describe('FileCollection', () => {
     })
 
     it('should call the right route', async () => {
-      await collection.updateFileMetadata('42', {
+      await collection.updateAttributes('42', {
         dir_id: '123'
+      })
+      expect(client.fetchJSON.mock.calls.length).toBeGreaterThan(0)
+      expect(
+        client.fetchJSON.mock.calls[client.fetchJSON.mock.calls.length - 1]
+      ).toMatchSnapshot()
+    })
+  })
+
+  describe('updateMetadataAttribute', () => {
+    beforeEach(() => {
+      client.fetchJSON.mockReturnValue({ data: [] })
+    })
+
+    afterEach(() => {
+      client.fetchJSON.mockClear()
+    })
+
+    it('should call the right route', async () => {
+      await collection.updateMetadataAttribute('42', {
+        classification: 'tax_notice'
       })
       expect(client.fetchJSON.mock.calls.length).toBeGreaterThan(0)
       expect(
@@ -461,6 +481,51 @@ describe('FileCollection', () => {
     })
   })
 
+  describe('download', () => {
+    beforeEach(() => {
+      client.fetchJSON.mockResolvedValue({
+        links: {
+          related: 'http://downloadable-link'
+        },
+        data: {}
+      })
+    })
+
+    afterEach(() => {
+      client.fetchJSON.mockClear()
+    })
+
+    it('should work when not specifying a revision', async () => {
+      const file = {
+        _id: '42',
+        name: 'fileName'
+      }
+      await collection.download(file)
+      const expectPath = `/files/downloads?Id=${file._id}&Filename=${file.name}`
+      expect(client.fetchJSON).toHaveBeenCalledWith('POST', expectPath)
+    })
+
+    it('should use download a specific version of a file', async () => {
+      const file = {
+        _id: '42',
+        name: 'fileName'
+      }
+      await collection.download(file, '123')
+      const expectPath = `/files/downloads?VersionId=123&Filename=${file.name}`
+      expect(client.fetchJSON).toHaveBeenCalledWith('POST', expectPath)
+    })
+
+    it('should use download a specific version of a file with a specific name', async () => {
+      const file = {
+        _id: '42',
+        name: 'fileName'
+      }
+      await collection.download(file, '123', 'myFileName')
+      const expectPath = `/files/downloads?VersionId=123&Filename=myFileName`
+      expect(client.fetchJSON).toHaveBeenCalledWith('POST', expectPath)
+    })
+  })
+
   describe('createFile', () => {
     const data = new File([''], 'mydoc.epub')
     const id = '59140416-b95f'
@@ -541,6 +606,7 @@ describe('FileCollection', () => {
       })
     })
   })
+
   describe('isChild', () => {
     beforeEach(() => {
       client.fetchJSON
@@ -590,6 +656,34 @@ describe('FileCollection', () => {
       )
     })
 
+    it('should find the parent with id', async () => {
+      client.fetchJSON
+        .mockReturnValueOnce({
+          data: {
+            _id: 'root-id',
+            dir_id: '',
+            path: '/'
+          }
+        })
+        .mockReturnValueOnce({
+          data: {
+            _id: '123',
+            dir_id: 'root-id',
+            path: '/a'
+          }
+        })
+        .mockReturnValueOnce({
+          data: {
+            _id: 'file-id',
+            dir_id: '123',
+            path: '/a/b'
+          }
+        })
+
+      const res = await collection.isChildOf('file-id', 'root-id')
+      expect(res).toEqual(true)
+    })
+
     it('should find the parent with dirID', async () => {
       const child = { _id: 'file-id', path: '/a/b/c', dirID: 'root-id' }
       const parent = 'root-id'
@@ -602,6 +696,18 @@ describe('FileCollection', () => {
       const parent = { _id: 'fake-id' }
       const res = await collection.isChildOf(child, parent)
       expect(res).toEqual(false)
+    })
+  })
+
+  describe('fetchFileContent', () => {
+    it('should fetch the content of a file', async () => {
+      const FILE_ID = 'd04ab491-2fc6'
+
+      await collection.fetchFileContent(FILE_ID)
+      expect(client.fetch).toHaveBeenCalledWith(
+        'GET',
+        '/files/download/d04ab491-2fc6'
+      )
     })
   })
 })

@@ -20,7 +20,7 @@ class AppCollection extends DocumentCollection {
    *
    * The returned documents are not paginated by the stack.
    *
-   * @return {{data, meta, skip, next}} The JSON API conformant response.
+   * @returns {{data, meta, skip, next}} The JSON API conformant response.
    * @throws {FetchError}
    */
   async all() {
@@ -33,10 +33,6 @@ class AppCollection extends DocumentCollection {
       skip: 0,
       next: false
     }
-  }
-
-  async get() {
-    throw new Error('get() method is not yet implemented')
   }
 
   async create() {

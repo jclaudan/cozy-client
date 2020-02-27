@@ -6,11 +6,11 @@ const isString = require('lodash/isString')
  */
 class QueryDefinition {
   /**
-   * @constructor
+   * @class
    * @param {string} doctype - The doctype of the doc.
    * @param {string} id - The id of the doc.
    * @param {Array} ids - The ids of the docs.
-   * @param {Object} selector - The selector to query the docs.
+   * @param {object} selector - The selector to query the docs.
    * @param {Array} fields - The fields to return.
    * @param {Array} indexedFields - The fields to index.
    * @param {Array} sort - The sorting params.
@@ -18,6 +18,8 @@ class QueryDefinition {
    * @param {string} referenced - The referenced document.
    * @param {number} limit - The document's limit to return.
    * @param {number} skip - The number of docs to skip.
+   * @param {number} cursor - The cursor to paginate views.
+   * @param {number} bookmark - The bookmark to paginate mango queries.
    */
   constructor({
     doctype,
@@ -31,7 +33,8 @@ class QueryDefinition {
     referenced,
     limit,
     skip,
-    cursor
+    cursor,
+    bookmark
   } = {}) {
     this.doctype = doctype
     this.id = id
@@ -45,13 +48,14 @@ class QueryDefinition {
     this.limit = limit
     this.skip = skip
     this.cursor = cursor
+    this.bookmark = bookmark
   }
 
   /**
    * Query a single document on its id.
    *
    * @param {string} id   The document id.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   getById(id) {
     return new QueryDefinition({ ...this.toDefinition(), id })
@@ -61,7 +65,7 @@ class QueryDefinition {
    * Query several documents on their ids.
    *
    * @param {Array} ids   The documents ids.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   getByIds(ids) {
     return new QueryDefinition({ ...this.toDefinition(), ids })
@@ -71,8 +75,8 @@ class QueryDefinition {
    * Query documents with a [mango selector](http://docs.couchdb.org/en/latest/api/database/find.html#find-selectors).
    * Each field passed in the selector will be indexed, except if the indexField option is used.
    *
-   * @param {Object} selector   The Mango selector.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @param {object} selector   The Mango selector.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   where(selector) {
     return new QueryDefinition({ ...this.toDefinition(), selector })
@@ -82,7 +86,7 @@ class QueryDefinition {
    * Specify which fields of each object should be returned. If it is omitted, the entire object is returned.
    *
    * @param {Array} fields The fields to return.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   select(fields) {
     return new QueryDefinition({ ...this.toDefinition(), fields })
@@ -92,7 +96,7 @@ class QueryDefinition {
    * Specify which fields should be indexed. This prevent the automatic indexing of the mango fields.
    *
    * @param {Array} fields The fields to index.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   indexFields(indexedFields) {
     return new QueryDefinition({ ...this.toDefinition(), indexedFields })
@@ -102,7 +106,7 @@ class QueryDefinition {
    * Specify how to sort documents, following the [sort syntax](http://docs.couchdb.org/en/latest/api/database/find.html#find-sort)
    *
    * @param {Array} sort The list of field name and direction pairs.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   sortBy(sort) {
     if (isString(sort)) {
@@ -118,7 +122,7 @@ class QueryDefinition {
    * For example, query albums including the photos.
    *
    * @param {Array} includes The documents to include.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   include(includes) {
     if (!Array.isArray(includes)) {
@@ -131,7 +135,7 @@ class QueryDefinition {
    * Maximum number of documents returned, useful for pagination. Default is 100.
    *
    * @param {number} limit The document's limit.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   limitBy(limit) {
     return new QueryDefinition({ ...this.toDefinition(), limit })
@@ -146,8 +150,9 @@ class QueryDefinition {
    *
    * Beware, this [performs badly](http://docs.couchdb.org/en/stable/ddocs/views/pagination.html#paging-alternate-method) on view's index.
    *  Prefer cursor-based pagination in such situation.
+   *
    * @param {number} skip The number of documents to skip.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   offset(skip) {
     return new QueryDefinition({ ...this.toDefinition(), skip })
@@ -162,16 +167,30 @@ class QueryDefinition {
    * Use the last docid of each query as startkey_docid to paginate or leave blank for the first query.
    *
    * @param {Array} cursor The cursor for pagination.
-   * @return {QueryDefinition}  The QueryDefinition object.
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   offsetCursor(cursor) {
     return new QueryDefinition({ ...this.toDefinition(), cursor })
   }
 
   /**
+   * Use [bookmark](https://docs.couchdb.org/en/2.2.0/api/database/find.html#pagination) pagination.
+   * Note this only applies for mango-queries (not views) and is way more efficient than skip pagination.
+   * The bookmark is a string returned by the _find response and can be seen as a pointer in
+   * the index for the next query.
+   *
+   * @param {string} bookmark The bookmark to continue a previous paginated query.
+   * @returns {QueryDefinition}  The QueryDefinition object.
+   */
+  offsetBookmark(bookmark) {
+    return new QueryDefinition({ ...this.toDefinition(), bookmark })
+  }
+
+  /**
    * Use the [file reference system](https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/)
-   * @param {Object} document The reference document
-   * @return {QueryDefinition}  The QueryDefinition object.
+   *
+   * @param {object} document The reference document
+   * @returns {QueryDefinition}  The QueryDefinition object.
    */
   referencedBy(document) {
     return new QueryDefinition({ ...this.toDefinition(), referenced: document })
@@ -190,10 +209,24 @@ class QueryDefinition {
       referenced: this.referenced,
       limit: this.limit,
       skip: this.skip,
-      cursor: this.cursor
+      cursor: this.cursor,
+      bookmark: this.bookmark
     }
   }
 }
+
+/**
+ * Helper to create a QueryDefinition. Recommended way to create
+ * query definitions.
+ *
+ * @example
+ * ```
+ * import { Q } from 'cozy-client'
+ *
+ * const qDef = Q('io.cozy.todos').where({ _id: '1234' })
+ * ```
+ */
+export const Q = doctype => new QueryDefinition({ doctype })
 
 // Mutations
 const CREATE_DOCUMENT = 'CREATE_DOCUMENT'

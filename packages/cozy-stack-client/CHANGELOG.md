@@ -3,6 +3,355 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.0.0](https://github.com/cozy/cozy-client/compare/v11.6.0...v12.0.0) (2020-02-26)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [11.2.0](https://github.com/cozy/cozy-client/compare/v11.1.1...v11.2.0) (2020-02-21)
+
+
+### Features
+
+* Add create to NotesCollection ([77ab427](https://github.com/cozy/cozy-client/commit/77ab427))
+
+
+
+
+
+# [11.1.0](https://github.com/cozy/cozy-client/compare/v11.0.1...v11.1.0) (2020-02-14)
+
+
+### Features
+
+* Refresh stack token when invalid ([#643](https://github.com/cozy/cozy-client/issues/643)) ([63ab7a7](https://github.com/cozy/cozy-client/commit/63ab7a7))
+
+
+
+
+
+## [11.0.1](https://github.com/cozy/cozy-client/compare/v11.0.0...v11.0.1) (2020-02-13)
+
+
+### Bug Fixes
+
+* Consider data object from stat ([98799f7](https://github.com/cozy/cozy-client/commit/98799f7))
+
+
+
+
+
+# [11.0.0](https://github.com/cozy/cozy-client/compare/v10.9.0...v11.0.0) (2020-02-12)
+
+
+### Features
+
+* Add support for bookmark pagination on _find queries ([070f626](https://github.com/cozy/cozy-client/commit/070f626))
+
+
+### BREAKING CHANGES
+
+* the `meta: {count}` in the response no longer exist.
+It was used to know how many docs were returned so far and was
+computed with the skip value.
+If the client needs this, it can be overcomed by keeping track of the
+returned docs for each query and perform a `.length` on it.
+
+
+
+
+
+# [10.7.0](https://github.com/cozy/cozy-client/compare/v10.6.0...v10.7.0) (2020-01-31)
+
+
+### Features
+
+* Add Notes collection `fetchURL` method ([231c737](https://github.com/cozy/cozy-client/commit/231c737))
+
+
+
+
+
+# [10.4.0](https://github.com/cozy/cozy-client/compare/v10.3.0...v10.4.0) (2020-01-27)
+
+
+### Features
+
+* Add revokeAllRecipients for a sharing ([57d9786](https://github.com/cozy/cozy-client/commit/57d9786))
+
+
+
+
+
+# [10.3.0](https://github.com/cozy/cozy-client/compare/v10.2.1...v10.3.0) (2020-01-24)
+
+
+### Bug Fixes
+
+* Use correct data endpoint ([d3339bd](https://github.com/cozy/cozy-client/commit/d3339bd))
+
+
+### Features
+
+* Get apps by id ([a59bf77](https://github.com/cozy/cozy-client/commit/a59bf77))
+
+
+
+
+
+# [10.0.0](https://github.com/cozy/cozy-client/compare/v9.10.0...v10.0.0) (2020-01-22)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [9.10.0](https://github.com/cozy/cozy-client/compare/v9.9.0...v9.10.0) (2020-01-20)
+
+
+### Features
+
+* Notes collection ([cac0cc7](https://github.com/cozy/cozy-client/commit/cac0cc7))
+
+
+
+
+
+# [9.9.0](https://github.com/cozy/cozy-client/compare/v9.8.1...v9.9.0) (2020-01-20)
+
+
+### Bug Fixes
+
+* Add onLine to memoize ([b1febfc](https://github.com/cozy/cozy-client/commit/b1febfc))
+* Memoization for getIcon ([73c43eb](https://github.com/cozy/cozy-client/commit/73c43eb))
+* Use custom error ([0c091d4](https://github.com/cozy/cozy-client/commit/0c091d4))
+
+
+### Features
+
+* Correctly await during tests ([2852488](https://github.com/cozy/cozy-client/commit/2852488))
+
+
+
+
+
+## [9.8.1](https://github.com/cozy/cozy-client/compare/v9.8.0...v9.8.1) (2020-01-16)
+
+
+### Bug Fixes
+
+* Refresh token on expiration ([#618](https://github.com/cozy/cozy-client/issues/618)) ([434962d](https://github.com/cozy/cozy-client/commit/434962d))
+
+
+
+
+
+# [9.7.0](https://github.com/cozy/cozy-client/compare/v9.6.1...v9.7.0) (2020-01-15)
+
+
+### Bug Fixes
+
+* Await promise during tests and fix the test ([d4bc48e](https://github.com/cozy/cozy-client/commit/d4bc48e))
+
+
+
+
+
+# [9.6.0](https://github.com/cozy/cozy-client/compare/v9.5.2...v9.6.0) (2020-01-13)
+
+
+### Features
+
+* Use bookmark pagination for queryAll ([8195a72](https://github.com/cozy/cozy-client/commit/8195a72))
+
+
+
+
+
+# [9.5.0](https://github.com/cozy/cozy-client/compare/v9.4.0...v9.5.0) (2020-01-08)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [9.2.0](https://github.com/cozy/cozy-client/compare/v9.1.1...v9.2.0) (2019-12-19)
+
+
+### Features
+
+* Destroy all removes the _type from the document ([1ca7ac7](https://github.com/cozy/cozy-client/commit/1ca7ac7))
+* Destroy all removes the _type from the document ([#597](https://github.com/cozy/cozy-client/issues/597)) ([cb5e61d](https://github.com/cozy/cozy-client/commit/cb5e61d))
+
+
+
+
+
+# [9.1.0](https://github.com/cozy/cozy-client/compare/v9.0.0...v9.1.0) (2019-12-18)
+
+
+### Features
+
+* Share a link with special permissions ([#598](https://github.com/cozy/cozy-client/issues/598)) ([ab73de8](https://github.com/cozy/cozy-client/commit/ab73de8))
+
+
+
+
+
+# [9.0.0](https://github.com/cozy/cozy-client/compare/v8.10.1...v9.0.0) (2019-12-18)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [8.8.0](https://github.com/cozy/cozy-client/compare/v8.7.1...v8.8.0) (2019-12-12)
+
+
+### Features
+
+* Add mockClient creation for use in tests ([b2c7b40](https://github.com/cozy/cozy-client/commit/b2c7b40))
+
+
+
+
+
+## [8.7.1](https://github.com/cozy/cozy-client/compare/v8.7.0...v8.7.1) (2019-12-10)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [8.7.0](https://github.com/cozy/cozy-client/compare/v8.6.0...v8.7.0) (2019-12-10)
+
+
+### Features
+
+* Fix regeneratorRuntime ([#588](https://github.com/cozy/cozy-client/issues/588)) ([4612ad9](https://github.com/cozy/cozy-client/commit/4612ad9)), closes [#584](https://github.com/cozy/cozy-client/issues/584)
+
+
+
+
+
+## [8.5.1](https://github.com/cozy/cozy-client/compare/v8.5.0...v8.5.1) (2019-12-05)
+
+
+### Bug Fixes
+
+* Don't change my headers ([fa25142](https://github.com/cozy/cozy-client/commit/fa25142))
+
+
+
+
+
+# [8.4.0](https://github.com/cozy/cozy-client/compare/v8.3.1...v8.4.0) (2019-11-29)
+
+
+### Features
+
+* Add checkForRevocation helper ([e62d62b](https://github.com/cozy/cozy-client/commit/e62d62b))
+
+
+
+
+
+# [8.3.0](https://github.com/cozy/cozy-client/compare/v8.2.0...v8.3.0) (2019-11-28)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [8.0.0](https://github.com/cozy/cozy-client/compare/v7.14.0...v8.0.0) (2019-11-22)
+
+
+### Bug Fixes
+
+* SettingsCollection fix data response ([11edf5e](https://github.com/cozy/cozy-client/commit/11edf5e))
+
+
+### BREAKING CHANGES
+
+* SettingsCollection now returns the result in data : {}
+
+
+
+
+
+# [7.12.0](https://github.com/cozy/cozy-client/compare/v7.11.0...v7.12.0) (2019-11-18)
+
+
+### Features
+
+* **cozy-stack-client:** Files get binary of a file ([31236b9](https://github.com/cozy/cozy-client/commit/31236b9))
+
+
+
+
+
+# [7.11.0](https://github.com/cozy/cozy-client/compare/v7.10.0...v7.11.0) (2019-11-13)
+
+
+### Features
+
+* **cozy-stack-client:** Download file version ([830679b](https://github.com/cozy/cozy-client/commit/830679b))
+
+
+
+
+
+# [7.8.0](https://github.com/cozy/cozy-client/compare/v7.7.0...v7.8.0) (2019-10-31)
+
+
+### Features
+
+* Added a simple settings collection ([fa0c1d6](https://github.com/cozy/cozy-client/commit/fa0c1d6))
+
+
+
+
+
+# [7.5.0](https://github.com/cozy/cozy-client/compare/v7.4.1...v7.5.0) (2019-10-16)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+## [7.1.1](https://github.com/cozy/cozy-client/compare/v7.1.0...v7.1.1) (2019-10-11)
+
+**Note:** Version bump only for package cozy-stack-client
+
+
+
+
+
+# [7.1.0](https://github.com/cozy/cozy-client/compare/v7.0.0...v7.1.0) (2019-10-10)
+
+
+### Bug Fixes
+
+* Deprecate updateFileMetadata ([fc811fe](https://github.com/cozy/cozy-client/commit/fc811fe))
+
+
+### Features
+
+* **cozy-stack-client:** Filecollection update file metadata ([1dbeb40](https://github.com/cozy/cozy-client/commit/1dbeb40))
+
+
+
+
+
 # [7.0.0](https://github.com/cozy/cozy-client/compare/v6.66.0...v7.0.0) (2019-10-07)
 
 

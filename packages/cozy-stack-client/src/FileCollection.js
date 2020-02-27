@@ -1,7 +1,7 @@
 import mime from 'mime/lite'
 import has from 'lodash/has'
 import DocumentCollection, { normalizeDoc } from './DocumentCollection'
-import { uri, slugify, forceFileDownload } from './utils'
+import { uri, slugify, forceFileDownload, formatBytes } from './utils'
 import * as querystring from './querystring'
 const ROOT_DIR_ID = 'io.cozy.files.root-dir'
 const CONTENT_TYPE_OCTET_STREAM = 'application/octet-stream'
@@ -53,6 +53,12 @@ class FileCollection extends DocumentCollection {
     this.specialDirectories = {}
   }
 
+  /**
+   * Fetches the file's data
+   *
+   * @param {string} id File id
+   * @returns {{data, included}} Information about the file or folder and it's descendents
+   */
   get(id) {
     return this.statById(id)
   }
@@ -62,9 +68,9 @@ class FileCollection extends DocumentCollection {
    *
    * The returned documents are paginated by the stack.
    *
-   * @param  {Object} selector The Mango selector.
+   * @param  {object} selector The Mango selector.
    * @param  {{sort, fields, limit, skip, indexId}} options The query options.
-   * @return {{data, meta, skip, next}} The JSON API conformant response.
+   * @returns {{data, meta, skip, next}} The JSON API conformant response.
    * @throws {FetchError}
    */
   async find(selector, options = {}) {
@@ -115,7 +121,7 @@ class FileCollection extends DocumentCollection {
    *  Add referenced_by documents to a file — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#post-filesfile-idrelationshipsreferenced_by
    *
    *  For example, to have an album referenced by a file:
-   *  ```
+   * ```
    * addReferencedBy({_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}, [{_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}])
    * ```
    *
@@ -136,7 +142,7 @@ class FileCollection extends DocumentCollection {
    *  Remove referenced_by documents from a file — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#delete-filesfile-idrelationshipsreferenced_by
    *
    *  For example, to remove an album reference from a file:
-   *  ```
+   * ```
    *  removeReferencedBy({_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}, [{_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}])
    * ```
    *
@@ -157,7 +163,7 @@ class FileCollection extends DocumentCollection {
    *  Add files references to a document — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#post-datatypedoc-idrelationshipsreferences
    *
    *  For example, to add a photo to an album:
-   *  ```
+   * ```
    *  addReferencesTo({_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}, [{_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}])
    * ```
    *
@@ -178,7 +184,7 @@ class FileCollection extends DocumentCollection {
    *  Remove files references to a document — see https://docs.cozy.io/en/cozy-stack/references-docs-in-vfs/#delete-datatypedoc-idrelationshipsreferences
    *
    *  For example, to remove a photo from an album:
-   *  ```
+   * ```
    *  removeReferencesTo({_id: 456, _type: "io.cozy.photos.albums", name: "Happy Cloud"}, [{_id: 123, _type: "io.cozy.files", name: "cozy.jpg"}])
    * ```
    *
@@ -253,12 +259,27 @@ class FileCollection extends DocumentCollection {
 
     return resp.data
   }
-
+  /**
+   *
+   * @param {File|Blob|Stream|string|ArrayBuffer} data file to be uploaded
+   * @param {string} dirPath Path to upload the file to. ie : /Administative/XXX/
+   * @returns {object} Created io.cozy.files
+   */
   async upload(data, dirPath) {
     const dirId = await this.ensureDirectoryExists(dirPath)
     return this.createFile(data, { dirId })
   }
 
+  /**
+   *
+   * @param {File|Blob|Stream|string|ArrayBuffer} data file to be uploaded
+   * @param {object} params Additionnal parameters
+   * @param {string} params.name Name of the file
+   * @param {string} params.dirId Id of the directory you want to upload the file to
+   * @param {boolean} params.executable If the file is an executable or not
+   * @param {object} params.metadata io.cozy.files.metadata to attach to the file
+   * @param  {object}  params.options     Options to pass to doUpload method (additional headers)
+   */
   async createFile(
     data,
     { name, dirId = '', executable, metadata, ...options } = {}
@@ -292,7 +313,7 @@ class FileCollection extends DocumentCollection {
    * @param  {boolean} params.executable  Whether the file is executable or not
    * @param  {object}  params.metadata    Metadata to be attached to the File io.cozy.file
    * @param  {object}  params.options     Options to pass to doUpload method (additional headers)
-   * @return {object}                     Updated document
+   * @returns {object}                     Updated document
    */
   async updateFile(
     data,
@@ -331,12 +352,20 @@ class FileCollection extends DocumentCollection {
     return this.doUpload(data, path, options, 'PUT')
   }
 
-  getDownloadLinkById(id) {
+  getDownloadLinkById(id, filename) {
     return this.stackClient
-      .fetchJSON('POST', uri`/files/downloads?Id=${id}`)
+      .fetchJSON('POST', uri`/files/downloads?Id=${id}&Filename=${filename}`)
       .then(this.extractResponseLinkRelated)
   }
 
+  getDownloadLinkByRevision(versionId, filename) {
+    return this.stackClient
+      .fetchJSON(
+        'POST',
+        uri`/files/downloads?VersionId=${versionId}&Filename=${filename}`
+      )
+      .then(this.extractResponseLinkRelated)
+  }
   getDownloadLinkByPath(path) {
     return this.stackClient
       .fetchJSON('POST', uri`/files/downloads?Path=${path}`)
@@ -349,9 +378,55 @@ class FileCollection extends DocumentCollection {
     return this.stackClient.fullpath(href)
   }
 
-  async download(file) {
-    const href = await this.getDownloadLinkById(file._id)
-    forceFileDownload(`${href}?Dl=1`, file.name)
+  /**
+   * Download a file or a specific version of the file
+   *
+   * @param {object} file io.cozy.files object
+   * @param {string} versionId Id of the io.cozy.files.version
+   * @param {string} filename The name you want for the downloaded file
+   *                            (by default the same as the file)
+   */
+  async download(file, versionId = null, filename = undefined) {
+    let href
+    const filenameToUse = filename ? filename : file.name
+    /**
+     * Passing a filename to forceFileDownload is not enough
+     * for a few browsers since the stack's response header will
+     * not contain that name. Passing the filename to
+     * getDownloadLinkBy{Id,Revision} will ask the stack to
+     * return this filename in its content-disposition
+     * header response
+     */
+    if (!versionId) {
+      href = await this.getDownloadLinkById(file._id, filenameToUse)
+    } else {
+      href = await this.getDownloadLinkByRevision(versionId, filenameToUse)
+    }
+    forceFileDownload(`${href}?Dl=1`, filenameToUse)
+  }
+
+  /**
+   * Fetch the binary of a file or a specific version of a file
+   * Useful for instance when you can't download the file directly
+   * (via a content-disposition attachement header) and need to store
+   * it before doing an operation.
+   *
+   * @param {string} id Id of the io.cozy.files or io.cozy.files.version
+   *
+   */
+  async fetchFileContent(id) {
+    return this.stackClient.fetch('GET', `/files/download/${id}`)
+  }
+  /**
+   * Get a beautified size for a given file
+   * 1024B => 1KB
+   * 102404500404B => 95.37 GB
+   *
+   * @param {object} file io.cozy.files object
+   * @param {int} decimal number of decimal
+   */
+  getBeautifulSize(file, decimal) {
+    return formatBytes(parseInt(file.size), decimal)
   }
 
   async downloadArchive(fileIds, notSecureFilename = 'files') {
@@ -379,7 +454,7 @@ class FileCollection extends DocumentCollection {
    *
    * @param  {string|object}  child    The file which can either be an id or an object
    * @param  {string|object}  parent   The parent target which can either be an id or an object
-   * @return {boolean}                 Whether the file is a parent's child
+   * @returns {boolean}                 Whether the file is a parent's child
    */
   async isChildOf(child, parent) {
     let { _id: childID, dirID: childDirID, path: childPath } =
@@ -391,8 +466,8 @@ class FileCollection extends DocumentCollection {
     }
     if (!childPath) {
       const childDoc = await this.statById(childID)
-      childPath = childDoc.path
-      childDirID = childDoc.dirID
+      childPath = childDoc.data.path
+      childDirID = childDoc.data.dirID
     }
 
     // Build hierarchy paths
@@ -518,13 +593,23 @@ class FileCollection extends DocumentCollection {
   }
 
   /**
-   * async updateFileMetadata - Updates a file's metadata
+   * async updateAttributes - Updates a file / folder's attributes except
+   * the metadata attribute. If you want to update its metadata attribute,
+   * then use `updateFileMetadataAttribute` since `metadata` is a specific
+   * doctype.
+   *
+   * For instance, if you want to update the name of a file, you can pass
+   * attributes = { name: 'newName'}
+   *
+   * You can see the attributes for both Folder and File (as they share the
+   * same doctype they have a few in common) here :
+   * https://docs.cozy.io/en/cozy-doctypes/docs/io.cozy.files/#iocozyfiles
    *
    * @param  {string} id         File id
-   * @param  {object} attributes New file meta data
+   * @param  {object} attributes New file attributes
    * @returns {object}            Updated document
    */
-  async updateFileMetadata(id, attributes) {
+  async updateAttributes(id, attributes) {
     const resp = await this.stackClient.fetchJSON('PATCH', uri`/files/${id}`, {
       data: {
         type: 'io.cozy.files',
@@ -535,6 +620,13 @@ class FileCollection extends DocumentCollection {
     return {
       data: normalizeFile(resp.data)
     }
+  }
+
+  async updateFileMetadata(id, attributes) {
+    console.warn(
+      'CozyClient FileCollection updateFileMetadata method is deprecated. Use updateAttributes instead'
+    )
+    return this.updateAttributes(id, attributes)
   }
 
   /**
@@ -561,6 +653,45 @@ class FileCollection extends DocumentCollection {
     }
   }
 
+  /**
+   *
+   * Updates the metadata attribute of a io.cozy.files
+   * Creates a new version of the file without having
+   * to upload again the file's content
+   *
+   * To see available content of the metadata attribute
+   * see : https://docs.cozy.io/en/cozy-doctypes/docs/io.cozy.files_metadata/
+   *
+   * @param {string} id File id
+   * @param {object} metadata io.cozy.files.metadata attributes
+   * @returns {object} io.cozy.files updated
+   */
+  async updateMetadataAttribute(id, metadata) {
+    const resp = await this.stackClient.fetchJSON(
+      'POST',
+      uri`/files/${id}/versions`,
+      {
+        data: {
+          type: 'io.cozy.files.metadata',
+          attributes: metadata
+        }
+      }
+    )
+    return {
+      data: resp.data
+    }
+  }
+  /**
+   *
+   * This method should not be called directly to upload a file.
+   * You should use `createFile`
+   *
+   * @param {File|Blob|Stream|string|ArrayBuffer} data file to be uploaded
+   * @param {string} path Uri to call the stack from. Something like
+   * `/files/${dirId}?Name=${name}&Type=file&Executable=${executable}&MetadataID=${metadataId}`
+   * @param {object} options Additional headers
+   * @param {string} method POST / PUT / PATCH
+   */
   async doUpload(data, path, options, method = 'POST') {
     if (!data) {
       throw new Error('missing data argument')

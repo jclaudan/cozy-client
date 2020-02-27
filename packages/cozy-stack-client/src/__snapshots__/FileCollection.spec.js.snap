@@ -25,7 +25,7 @@ exports[`FileCollection findReferencedBy should pass all the filters 1`] = `
   ],
   "results": Array [
     Object {
-      "isThrow": false,
+      "type": "return",
       "value": Object {
         "data": Array [],
         "meta": Object {},
@@ -53,7 +53,7 @@ exports[`FileCollection referencedBy should add a reference 1`] = `
   ],
   "results": Array [
     Object {
-      "isThrow": false,
+      "type": "return",
       "value": undefined,
     },
   ],
@@ -78,14 +78,14 @@ exports[`FileCollection referencedBy should remove a reference 1`] = `
   ],
   "results": Array [
     Object {
-      "isThrow": false,
+      "type": "return",
       "value": undefined,
     },
   ],
 }
 `;
 
-exports[`FileCollection updateFileMetadata should call the right route 1`] = `
+exports[`FileCollection updateAttributes should call the right route 1`] = `
 Array [
   "PATCH",
   "/files/42",
@@ -96,6 +96,21 @@ Array [
       },
       "id": "42",
       "type": "io.cozy.files",
+    },
+  },
+]
+`;
+
+exports[`FileCollection updateMetadataAttribute should call the right route 1`] = `
+Array [
+  "POST",
+  "/files/42/versions",
+  Object {
+    "data": Object {
+      "attributes": Object {
+        "classification": "tax_notice",
+      },
+      "type": "io.cozy.files.metadata",
     },
   },
 ]

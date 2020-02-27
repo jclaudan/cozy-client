@@ -47,6 +47,12 @@ const FIND_RESPONSE_FIXTURE = {
   next: false
 }
 
+const GET_RESPONSE_FIXTURE = {
+  id: '12345',
+  label: 'Buy bread',
+  done: false
+}
+
 const NEW_TODO = {
   label: 'Jettison boosters',
   done: false
@@ -109,7 +115,7 @@ describe('DocumentCollection', () => {
       await collection.all()
       expect(client.fetchJSON).toHaveBeenLastCalledWith(
         'GET',
-        '/data/io.cozy.todos/_normal_docs?include_docs=true'
+        '/data/io.cozy.todos/_normal_docs?include_docs=true&limit=100'
       )
 
       client.fetchJSON.mockReturnValue(Promise.resolve(ALL_RESPONSE_FIXTURE))
@@ -128,7 +134,15 @@ describe('DocumentCollection', () => {
       )
     })
 
-    it('should paginate results', async () => {
+    it('should accept bookmark options', async () => {
+      await collection.all({ bookmark: 'himark' })
+      expect(client.fetchJSON).toHaveBeenCalledWith(
+        'GET',
+        '/data/io.cozy.todos/_normal_docs?include_docs=true&limit=100&bookmark=himark'
+      )
+    })
+
+    it('should paginate results with skip', async () => {
       client.fetchJSON.mockReturnValue({
         rows: [{}, {}],
         total_rows: 3
@@ -144,12 +158,31 @@ describe('DocumentCollection', () => {
       expect(respWithoutNext.next).toBe(false)
     })
 
+    it('should paginate results with bookmark', async () => {
+      client.fetchJSON.mockReturnValue({
+        rows: [{}, {}],
+        total_rows: 3
+      })
+      const respWithNext = await collection.all({ limit: 2, bookmark: 'book' })
+      expect(respWithNext.next).toBe(true)
+
+      client.fetchJSON.mockReturnValue({
+        rows: [{}],
+        total_rows: 3
+      })
+      const respWithoutNext = await collection.all({
+        limit: 2,
+        bookmark: 'mark'
+      })
+      expect(respWithoutNext.next).toBe(false)
+    })
+
     it('should accept keys option', async () => {
       client.fetchJSON.mockReturnValue(Promise.resolve(ALL_RESPONSE_FIXTURE))
       await collection.all({ keys: ['abc', 'def'] })
       expect(client.fetchJSON).toHaveBeenCalledWith(
         'GET',
-        '/data/io.cozy.todos/_all_docs?include_docs=true&keys=[%22abc%22,%22def%22]'
+        '/data/io.cozy.todos/_all_docs?include_docs=true&limit=100&keys=[%22abc%22,%22def%22]'
       )
     })
 
@@ -248,6 +281,31 @@ describe('DocumentCollection', () => {
     })
   })
 
+  describe('get', () => {
+    const collection = new DocumentCollection('io.cozy.todos', client)
+
+    beforeAll(() => {
+      client.fetchJSON.mockReturnValue(Promise.resolve(GET_RESPONSE_FIXTURE))
+    })
+    it('should call the right route', async () => {
+      await collection.get('fakeid')
+      expect(client.fetchJSON).toHaveBeenCalledWith(
+        'GET',
+        '/data/io.cozy.todos/fakeid'
+      )
+    })
+
+    it('should return a correct JSON API response', async () => {
+      const resp = await collection.get('fakeid')
+      expect(resp).toConformToJSONAPI()
+    })
+
+    it('should return normalized document', async () => {
+      const resp = await collection.get('fakeid')
+      expect(resp.data).toHaveDocumentIdentity()
+    })
+  })
+
   describe('createIndex', () => {
     const collection = new DocumentCollection('io.cozy.todos', client)
 
@@ -338,6 +396,22 @@ describe('DocumentCollection', () => {
           limit: 200,
           selector: { done: false },
           skip: 50,
+          use_index: '_design/123456'
+        }
+      )
+    })
+
+    it('should accept bookmark option', async () => {
+      const collection = new DocumentCollection('io.cozy.todos', client)
+      await collection.find({ done: false }, { bookmark: 'himark', limit: 200 })
+      expect(client.fetchJSON).toHaveBeenLastCalledWith(
+        'POST',
+        '/data/io.cozy.todos/_find',
+        {
+          limit: 200,
+          selector: { done: false },
+          skip: 0,
+          bookmark: 'himark',
           use_index: '_design/123456'
         }
       )
@@ -564,7 +638,7 @@ describe('DocumentCollection', () => {
     it('should do bulk delete', async () => {
       const { collection, client } = setup()
       await collection.destroyAll([
-        { _id: 1, name: 'Marge' },
+        { _id: 1, name: 'Marge', _type: 'io.cozy.simpsons' },
         { _id: 2, name: 'Homer' }
       ])
       expect(client.fetchJSON).toHaveBeenCalledWith(
